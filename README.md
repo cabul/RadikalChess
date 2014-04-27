@@ -14,15 +14,15 @@ The following rules have been added:
 - No-capture moves have to threaten the king or at least approach it (as of manhattan distance)
 - The game ends when there is any player with no moves left or his king checkmate
 
-Furthermore the classical chess board has been modified:
+Furthermore the classic chess board has been modified:
 
 <table>
   <tr>
   <td><strong>6</strong></td>
   <td>&#9818;</td>
   <td>&#9819;</td>
-  <td>&#9820;</td>
   <td>&#9821;</td>
+  <td>&#9820;</td>
   </tr>
   <tr>
   <td><strong>5</strong></td>
