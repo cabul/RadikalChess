@@ -14,7 +14,7 @@ The following rules have been added:
 - No-capture moves have to threaten the king or at least approach it (as of chebyshev distance)
 - The game ends when there is any player with no moves left or his king checkmate
 
-Furthermore the classical chess board has been modified
+Furthermore the classical chess board has been modified:
 
 <table>
   <tr>
