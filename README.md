@@ -9,39 +9,52 @@ Initial Board
 
 <table>
   <tr>
+  <td><strong>6</strong></td>
   <td>BK</td>
   <td>BQ</td>
   <td>BB</td>
   <td>BR</td>
   </tr>
   <tr>
+  <td><strong>6</strong></td>
   <td>BP</td>
   <td>BP</td>
   <td>BP</td>
   <td>BP</td>
   </tr>
   <tr>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td></td>
+  <td><strong>6</strong></td>
+  <td>  </td>
+  <td>  </td>
+  <td>  </td>
+  <td>  </td>
   </tr>
   <tr>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td></td>
+  <td><strong>6</strong></td>
+  <td>  </td>
+  <td>  </td>
+  <td>  </td>
+  <td>  </td>
   </tr>
   <tr>
+  <td><strong>6</strong></td>
   <td>WP</td>
   <td>WP</td>
   <td>WP</td>
   <td>WP</td>
   </tr>
   <tr>
+  <td><strong>6</strong></td>
   <td>WR</td>
   <td>WB</td>
   <td>WQ</td>
   <td>WK</td>
   </tr>
+  <tr>
+  <td> </td>
+  <td><strong>A</strong></td>
+  <td><strong>B</strong></td>
+  <td><strong>C</strong></td>
+  <td><strong>D</strong></td>
+  </tr
 </table>
