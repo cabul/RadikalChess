@@ -7,6 +7,8 @@ It is a course project for the current semester (2014) of Fundamentos de Sistema
 Initial Board
 -------------
 
+The classical chess board has been modified
+
 <table>
   <tr>
   <td><strong>6</strong></td>
@@ -51,10 +53,19 @@ Initial Board
   <td>&#9812;</td>
   </tr>
   <tr>
-  <td> </td>
+  <td>*</td>
   <td><strong>A</strong></td>
   <td><strong>B</strong></td>
   <td><strong>C</strong></td>
   <td><strong>D</strong></td>
   </tr
 </table>
+
+Additional Rules
+----------------
+
+The following rules have been added:
+- Pawns will always move just one field at a time
+- There is no castling
+- No-capture moves have to threaten the king or at least approach it (as of chebyshev distance)
+- The game ends when there is any player with no moves left or his king checkmate
