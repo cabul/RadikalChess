@@ -10,45 +10,45 @@ Initial Board
 <table>
   <tr>
   <td><strong>6</strong></td>
-  <td>BK</td>
-  <td>BQ</td>
-  <td>BB</td>
-  <td>BR</td>
+  <td>&#9818;</td>
+  <td>&#9819;</td>
+  <td>&#9820;</td>
+  <td>&#9821;</td>
   </tr>
   <tr>
-  <td><strong>6</strong></td>
-  <td>BP</td>
-  <td>BP</td>
-  <td>BP</td>
-  <td>BP</td>
+  <td><strong>5</strong></td>
+  <td>&#9823;</td>
+  <td>&#9823;</td>
+  <td>&#9823;</td>
+  <td>&#9823;</td>
   </tr>
   <tr>
-  <td><strong>6</strong></td>
-  <td>  </td>
-  <td>  </td>
-  <td>  </td>
-  <td>  </td>
-  </tr>
-  <tr>
-  <td><strong>6</strong></td>
+  <td><strong>4</strong></td>
   <td>  </td>
   <td>  </td>
   <td>  </td>
   <td>  </td>
   </tr>
   <tr>
-  <td><strong>6</strong></td>
-  <td>WP</td>
-  <td>WP</td>
-  <td>WP</td>
-  <td>WP</td>
+  <td><strong>3</strong></td>
+  <td>  </td>
+  <td>  </td>
+  <td>  </td>
+  <td>  </td>
   </tr>
   <tr>
-  <td><strong>6</strong></td>
-  <td>WR</td>
-  <td>WB</td>
-  <td>WQ</td>
-  <td>WK</td>
+  <td><strong>2</strong></td>
+  <td>&#9817;</td>
+  <td>&#9817;</td>
+  <td>&#9817;</td>
+  <td>&#9817;</td>
+  </tr>
+  <tr>
+  <td><strong>1</strong></td>
+  <td>&#9814;</td>
+  <td>&#9815;</td>
+  <td>&#9813;</td>
+  <td>&#9812;</td>
   </tr>
   <tr>
   <td> </td>
