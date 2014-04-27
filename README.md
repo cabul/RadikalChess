@@ -60,7 +60,7 @@ Furthermore the classical chess board has been modified
   <td>&#9812;</td>
   </tr>
   <tr>
-  <td>*</td>
+  <td>  </td>
   <td><strong>A</strong></td>
   <td><strong>B</strong></td>
   <td><strong>C</strong></td>
