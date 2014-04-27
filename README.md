@@ -4,10 +4,17 @@ RadikalChess
 Radikal Chess is a chess implementation with slightly modified rules.
 It is a course project for the current semester (2014) of Fundamentos de Sistemas Inteligentes (Fundamentals of Intelligent Systems) at the University of Las Palmas (www.ulpgc.es)
 
-Initial Board
--------------
 
-The classical chess board has been modified
+Changes
+-------
+
+The following rules have been added:
+- Pawns will always move just one field at a time
+- There is no castling
+- No-capture moves have to threaten the king or at least approach it (as of chebyshev distance)
+- The game ends when there is any player with no moves left or his king checkmate
+
+Furthermore the classical chess board has been modified
 
 <table>
   <tr>
@@ -60,12 +67,3 @@ The classical chess board has been modified
   <td><strong>D</strong></td>
   </tr
 </table>
-
-Additional Rules
-----------------
-
-The following rules have been added:
-- Pawns will always move just one field at a time
-- There is no castling
-- No-capture moves have to threaten the king or at least approach it (as of chebyshev distance)
-- The game ends when there is any player with no moves left or his king checkmate
