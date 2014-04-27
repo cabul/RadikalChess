@@ -7,17 +7,41 @@ It is a course project for the current semester (2014) of Fundamentos de Sistema
 Initial Board
 -------------
 
-<span>   +---+---+---+---+</span><br/>
-<span> 6 |   |   |   |   |</span><br/>
-<span>   +---+---+---+---+</span><br/>
-<span> 5 |   |   |   |   |</span><br/>
-<span>   +---+---+---+---+</span><br/>
-<span> 4 |   |   |   |   |</span><br/>
-<span>   +---+---+---+---+</span><br/>
-<span> 3 |   |   |   |   |</span><br/>
-<span>   +---+---+---+---+</span><br/>
-<span> 2 |   |   |   |   |</span><br/>
-<span>   +---+---+---+---+</span><br/>
-<span> 1 |   |   |   |   |</span><br/>
-<span>   +---+---+---+---+</span><br/>
-<span>     A   B   C   D  </span><br/>
+<table>
+  <tr>
+  <td>BK</td>
+  <td>BQ</td>
+  <td>BB</td>
+  <td>BR</td>
+  </tr>
+  <tr>
+  <td>BP</td>
+  <td>BP</td>
+  <td>BP</td>
+  <td>BP</td>
+  </tr>
+  <tr>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  </tr>
+  <tr>
+  <td>WP</td>
+  <td>WP</td>
+  <td>WP</td>
+  <td>WP</td>
+  </tr>
+  <tr>
+  <td>WR</td>
+  <td>WB</td>
+  <td>WQ</td>
+  <td>WK</td>
+  </tr>
+</table>
