@@ -1,5 +1,7 @@
 package rc;
 
+import rc.model.Move;
+import rc.model.Board;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
