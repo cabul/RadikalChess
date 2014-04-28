@@ -6,8 +6,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import static rc.model.Move.*;
+
 public final class Board 
 {
+    
+    // Static utilities, definitions, etc.
 
     public static final String MagicString = "Radikal Chess";
     
@@ -91,7 +95,18 @@ public final class Board
         
     }
     
-    public static String index( int pos )
+    
+    public static int indexFromString(String str)
+    {
+        if(str.length() != 2 ) return -1;
+        final int row = Integer.parseInt( str.substring(1) ) - 1;
+        if( row < 0 || row >= ROWS ) return -1;
+        final int col = ( (int) Character.toUpperCase( str.charAt(0) ) ) - 65 ;
+        if( col < 0 || col >= COLUMNS ) return -1;
+        return row * COLUMNS + col;
+    }
+    
+    public static String indexToString(int pos)
     {
         String str = "";
         str += (char)( 65 + ( pos % COLUMNS ));
@@ -99,12 +114,18 @@ public final class Board
         return str;
     }
     
-    public static int index( String pos )
+    public static boolean indexIsValid(int pos)
     {
-        int row = Integer.parseInt( pos.substring(1) ) - 1;
-        int col = ( (int) Character.toUpperCase( pos.charAt(0) ) ) - 65 ;
-        return row * Board.COLUMNS + col;
+        return pos >= 0  && pos < ALL_SQUARES;
     }
+    
+    public static boolean indexAtEndRow(int pos)
+    {
+        return pos < COLUMNS || pos >= ALL_SQUARES - COLUMNS;
+    }
+    
+    // Static part ends
+    // Object part 
     
     int turn;
     private int bitBoards[];
@@ -228,7 +249,7 @@ public final class Board
         
         return "Turn " + turn + "\n" 
              + builder.toString() 
-             + PlayerStrings[player()] + " to move";
+             + PlayerStrings[getPlayer()] + " to move";
     }
     
     public void reset()
@@ -296,28 +317,16 @@ public final class Board
     
     public void applyMove( Move move )
     {
-        final int moveType = move.moveType;
-        switch( moveType )
+        final int type = move.moveType;
+        removePiece( move.sourceSquare, move.movingPiece );
+        if( (type & MOVE_CAPTURE) != 0)
+            removePiece( move.destinationSquare, move.capturedPiece );
+        if( (type & MOVE_PROMOTION) == 0)
+            addPiece( move.destinationSquare, move.movingPiece );
+        else 
         {
-            case Move.MOVE_NORMAL:
-                removePiece( move.sourceSquare, move.movingPiece );
-                addPiece( move.destinationSquare, move.movingPiece );
-                break;
-            case Move.MOVE_CAPTURE:
-                removePiece( move.destinationSquare, move.capturedPiece );
-                removePiece( move.sourceSquare, move.movingPiece );
-                addPiece( move.destinationSquare, move.movingPiece );
-                break;
-            case Move.MOVE_STALEMATE:
-                System.out.println("Stalemate");
-                break;
-            case Move.MOVE_PROMOTION:
-                int color = ( move.movingPiece % 2 );
-                removePiece( move.sourceSquare, move.movingPiece );
-                if ( move.capturedPiece != Board.EMPTY_SQUARE )
-                    removePiece( move.destinationSquare, move.capturedPiece );
-                addPiece( move.destinationSquare, QUEEN + color );
-                break;
+            final int color = ( move.movingPiece % 2 );
+            addPiece( move.destinationSquare, QUEEN + color );
         }
         
         turn++;
@@ -378,12 +387,7 @@ public final class Board
             
     }
     
-    public boolean isEndRow(int pos)
-    {
-        return pos < COLUMNS || pos >= ALL_SQUARES - COLUMNS;
-    }
-    
-    public int player()
+    public int getPlayer()
     {
         return turn % 2;
     }

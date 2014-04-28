@@ -50,8 +50,8 @@ public final class Move
         
         return str + "): " 
                    + Board.PieceStrings[movingPiece] 
-                   + " from " + Board.index(sourceSquare)
-                   + " to " + Board.index(destinationSquare);
+                   + " from " + Board.indexToString(sourceSquare)
+                   + " to " + Board.indexToString(destinationSquare);
         
     }
     
@@ -65,33 +65,55 @@ public final class Move
     }
     
     
-    public final static class Builder 
+    public final static class MoveBuilder 
     {
         private int movingPiece;
         private int capturedPiece;
         private int sourceSquare;
         private int destinationSquare;
-        private int moveType;
-
-        public void move(int movingPiece) {
+        
+        public MoveBuilder move(int movingPiece) {
             this.movingPiece = movingPiece;
+            return this;
         }
 
-        public void capture(int capturedPiece) {
-            if ( capturedPiece != Board.EMPTY_SQUARE )
-                moveType
+        public MoveBuilder capture(int capturedPiece) {
             this.capturedPiece = capturedPiece;
+            return this;
         }
 
-        public void from(int sourceSquare) {
+        public MoveBuilder from(int sourceSquare) {
             this.sourceSquare = sourceSquare;
+            return this;
         }
 
-        public void to(int destinationSquare) {
+        public MoveBuilder to(int destinationSquare) {
             this.destinationSquare = destinationSquare;
+            return this;
         }
         
-        public Move build()
+        public Move build() {
+            int moveType = MOVE_NORMAL;
+            if ( capturedPiece != Board.EMPTY_SQUARE )
+                moveType |= MOVE_CAPTURE;
+            if ( Board.indexAtEndRow( destinationSquare ) 
+              && movingPiece < Board.BISHOP )
+                moveType |= MOVE_PROMOTION;
+            
+            return new Move( movingPiece
+                           , capturedPiece
+                           , sourceSquare
+                           , destinationSquare 
+                           , moveType );
+        }
+        
+        public MoveBuilder with(Board board, String from, String to) {
+            from( Board.indexFromString(from) );
+            to( Board.indexFromString(to) );
+            move( board.findPiece(sourceSquare) );
+            capture( board.findPiece(destinationSquare) );
+            return this;
+        }
         
     }
     
