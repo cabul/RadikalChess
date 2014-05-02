@@ -1,12 +1,12 @@
-package rc;
+package radikalchess;
 
-import rc.model.Move;
-import rc.model.Board;
+import radikalchess.model.Move;
+import radikalchess.model.Board;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import static rc.model.Move.MoveBuilder;
+import static radikalchess.model.Move.MoveBuilder;
 
 public class Main
 {
