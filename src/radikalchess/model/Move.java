@@ -1,4 +1,4 @@
-package rc.model;
+package radikalchess.model;
 
 public final class Move
 {

@@ -1,4 +1,4 @@
-package rc.model;
+package radikalchess.model;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -6,7 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static rc.model.Move.*;
+import static radikalchess.model.Move.*;
 
 public final class Board 
 {
@@ -55,6 +55,7 @@ public final class Board
     public static String PlayerStrings[];
     public static String PieceStrings[];
     public static int PieceValues[];
+    public static int PlayerPieces[];
     
     static 
     {

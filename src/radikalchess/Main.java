@@ -1,12 +1,12 @@
-package rc;
+package radikalchess;
 
-import rc.model.Move;
-import rc.model.Board;
+import radikalchess.model.Move;
+import radikalchess.model.Board;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import static rc.model.Move.MoveBuilder;
+import static radikalchess.model.Move.MoveBuilder;
 
 public class Main
 {
@@ -76,12 +76,35 @@ public class Main
                 case "help":
                     System.out.println("There is no help...You are all alone");
                     break;
+                case "level":
+                    System.out.println("Not implemented");
+                    break;
+                case "white":
+                    System.out.println("Not implemented");
+                    break;
+                case "black":
+                    System.out.println("Not implemented");
                 default:
                     System.out.println("Not supported");
                     break;
             }
             
         }
+        
+    }
+    
+    public static void buildMove() {
+        MoveBuilder builder = new MoveBuilder();
+        Move m;
+        
+        builder.move(Board.BLACK_BISHOP);
+        builder.capture(Board.EMPTY_SQUARE);
+        builder.from(10);
+        builder.to(11);
+        
+        m = builder.build();
+        
+        System.out.println(m.toString () );
         
     }
     
