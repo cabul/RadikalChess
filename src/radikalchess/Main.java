@@ -93,19 +93,4 @@ public class Main
         
     }
     
-    public static void buildMove() {
-        MoveBuilder builder = new MoveBuilder();
-        Move m;
-        
-        builder.move(Board.BLACK_BISHOP);
-        builder.capture(Board.EMPTY_SQUARE);
-        builder.from(10);
-        builder.to(11);
-        
-        m = builder.build();
-        
-        System.out.println(m.toString () );
-        
-    }
-    
 }
