@@ -1,6 +1,7 @@
 package radikalchess.util;
 
 import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import static radikalchess.BitBoard.*;
@@ -8,11 +9,11 @@ import static radikalchess.BitBoard.*;
 public class MoveMaskGenerator {
     
     public static void main(String[] args) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( System.out ))) {
-            //generateMoveMask( writer );
-            generateDistanceMap( writer );
-        }
-        
+        //try (BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( System.out ))) {
+        try (BufferedWriter writer = new BufferedWriter( new FileWriter("res/movemask.java"))) {    
+            generateMoveMask( writer );
+            generateDistanceMask( writer );
+        }   
     }
     
     private static void generateMoveMask( BufferedWriter bw ) throws IOException {
@@ -128,7 +129,7 @@ public class MoveMaskGenerator {
         }
     }
     
-    private static void generateDistanceMap(BufferedWriter bw) throws IOException
+    private static void generateDistanceMask(BufferedWriter bw) throws IOException
     {
         bw.write("// Distance Map for Pieces"); bw.newLine();
         bw.write("// Ordererd by King position, Piece position"); bw.newLine();
