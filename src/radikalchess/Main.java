@@ -23,15 +23,16 @@ public class Main
     
     private static void repl(BufferedReader br) throws IOException
     {
+        
+        System.out.println("Welcome to Radikal Chess");
+        
         String[] args;
         
         Stack stack = new Stack();
-        
-        stack.push( new BitBoard().reset() );
+        stack.load( "res/init.sav" );
+        stack.printTop();
         
         boolean running = true;
-        
-        System.out.println("Welcome to Radikal Chess");
         
         while ( running )
         {
@@ -41,6 +42,9 @@ public class Main
                 case "exit":
                     running = false;
                     break;
+                case "new":
+                    stack.load( "res/init.sav" );
+                    stack.printTop();
                 case "move":
                     if( args.length < 3 )
                     {

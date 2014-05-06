@@ -307,33 +307,6 @@ public final class BitBoard
              + VERBOSE[player()] + " to move";
     }
     
-    public BitBoard reset()
-    {
-        empty();
-        
-        addPiece( 0, WHITE_ROOK );
-        addPiece( 1, WHITE_BISHOP );
-        addPiece( 2, WHITE_QUEEN );
-        addPiece( 3, WHITE_KING );
-        for ( int i = 4; i < 8; i++)
-        {
-            addPiece( i, WHITE_PAWN );
-        }
-        
-        addPiece( 23, BLACK_ROOK );
-        addPiece( 22, BLACK_BISHOP );
-        addPiece( 21, BLACK_QUEEN );
-        addPiece( 20, BLACK_KING );
-        for ( int i = 16; i < 20; i++)
-        {
-            addPiece( i, BLACK_PAWN );
-        }
-        
-        turn = 1;
-        
-        return this;
-    }
-    
     public int pieceAt( int square )
     {
         return bitSquares[ square ];
