@@ -9,7 +9,7 @@ public class MoveMaskGenerator {
     
     public static void main(String[] args) throws IOException {
         try (BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( System.out ))) {
-            generateMoveMask( writer );
+            //generateMoveMask( writer );
             generateDistanceMap( writer );
         }
         
@@ -130,7 +130,40 @@ public class MoveMaskGenerator {
     
     private static void generateDistanceMap(BufferedWriter bw) throws IOException
     {
+        bw.write("// Distance Map for Pieces"); bw.newLine();
+        bw.write("// Ordererd by King position, Piece position"); bw.newLine();
+        String distance = "DISTANCE_MAP";
+        String prefix = "public static final int[][] ";
+        String suffix = " = new int["+ALL_SQUARES+"]["+ALL_SQUARES+"];";
+        bw.write(prefix + distance + suffix); bw.newLine();
+        for( int king = 0; king < ALL_SQUARES; king++ )
+        {
+            for( int piece = 0; piece < ALL_SQUARES; piece++ )
+            {
+                int mask = 0;
+                int threshold = getEuclideanDistance2( king, piece );
+                if( king != piece )
+                {
+                    for( int square = 0; square < ALL_SQUARES; square++ )
+                    {
+                        if( getEuclideanDistance2( king, square ) < threshold )
+                            mask |= SQUARE_BITS[ square ];
+                    }
+                }
+                
+                bw.write( distance + "["+king+"]["+piece+"] = "+ mask + ";"); bw.newLine();
+            }
+        }
+    }
+    
+    private static int getEuclideanDistance2(int a, int b)
+    {
+        int arow = a / COLUMNS;
+        int acol = a % COLUMNS;
+        int brow = b / COLUMNS;
+        int bcol = b % COLUMNS;
         
+        return (brow-arow)*(brow-arow) + (bcol-acol)*(bcol-acol);
     }
 
 }
