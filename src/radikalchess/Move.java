@@ -1,4 +1,4 @@
-package radikalchess.model;
+package radikalchess;
 
 public final class Move
 {
@@ -49,9 +49,9 @@ public final class Move
             str += "Promotion ";
         
         return str + "): " 
-                   + Board.PieceStrings[movingPiece] 
-                   + " from " + Board.indexToString(sourceSquare)
-                   + " to " + Board.indexToString(destinationSquare);
+                   + BitBoard.VERBOSE[movingPiece] 
+                   + " from " + BitBoard.indexToString(sourceSquare)
+                   + " to " + BitBoard.indexToString(destinationSquare);
         
     }
     
@@ -94,10 +94,10 @@ public final class Move
         
         public Move build() {
             int moveType = MOVE_NORMAL;
-            if ( capturedPiece != Board.EMPTY_SQUARE )
+            if ( capturedPiece != BitBoard.EMPTY_SQUARE )
                 moveType |= MOVE_CAPTURE;
-            if ( Board.indexAtEndRow( destinationSquare ) 
-              && movingPiece < Board.BISHOP )
+            if ( BitBoard.indexAtEndRow( destinationSquare ) 
+              && movingPiece < BitBoard.BISHOP )
                 moveType |= MOVE_PROMOTION;
             
             return new Move( movingPiece
@@ -105,14 +105,6 @@ public final class Move
                            , sourceSquare
                            , destinationSquare 
                            , moveType );
-        }
-        
-        public MoveBuilder with(Board board, String from, String to) {
-            from( Board.indexFromString(from) );
-            to( Board.indexFromString(to) );
-            move( board.findPiece(sourceSquare) );
-            capture( board.findPiece(destinationSquare) );
-            return this;
         }
         
     }

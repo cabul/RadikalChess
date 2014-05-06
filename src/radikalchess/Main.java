@@ -1,80 +1,124 @@
 package radikalchess;
 
-import radikalchess.model.Move;
-import radikalchess.model.Board;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import static radikalchess.model.Move.MoveBuilder;
+import static radikalchess.Move.MoveBuilder;
 
 public class Main
 {
 
     private static final MoveBuilder turn = new MoveBuilder();
     
-    private static Board board = new Board();
+    private static BitBoard board = new BitBoard();
     
     public static void main(String[] args) throws IOException 
     {
-        System.out.println("Welcome to Radikal Chess");
-        
         BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
         
-        String line;
-        String[] cl = null;
+        board.reset();
+        
+        repl(br);
+        
+    }
+    
+    private static void repl(BufferedReader br) throws IOException
+    {
+        String[] args;
         
         boolean running = true;
-        boolean verbose = true;
+        
+        System.out.println("Welcome to Radikal Chess");
+        
+        print( board );
         
         while ( running )
         {
-            if(verbose)
+            args = br.readLine().split(" ");
+            switch (args[0]) 
             {
-                System.out.println( board.toString() );
-            }
-            line = br.readLine();
-            
-            cl = line.split(" ");
-            switch (cl[0]) 
-            {
-                case "end":
+                case "exit":
                     running = false;
                     break;
                 case "move":
-                    Move m = turn.with(board,cl[1],cl[2]).build();
-                    System.out.println(m.toString());
-                    board.applyMove(m);
-                    break;
-                case "at":
-                    int index = Board.indexFromString(cl[1]);
-                    System.out.println(index + ": " + Board.PieceStrings[board.findPiece(index)]);
-                    break;
-                case "verbose":
-                    switch (cl[1]) 
+                    if( args.length < 3 )
                     {
-                    case "on":
-                        verbose = true;
-                        break;
-                    case "off":
-                        verbose = false;
-                        break;
-                    default:
-                        System.out.println("error");
+                        error("Not enough arguments");
                         break;
                     }
+                    int aux = BitBoard.indexFromString( args[1] );
+                    if( aux < 0 )
+                    {
+                        error("Index not valid");
+                        break;
+                    }
+                    turn.from(aux);
+                    turn.move( board.pieceAt(aux) );
+                    aux = BitBoard.indexFromString( args[2] );
+                    if( aux < 0 )
+                    {
+                        error("Index not valid");
+                        break;
+                    }
+                    turn.to(aux);
+                    turn.capture( board.pieceAt(aux) );
+                    Move m = turn.build();
+                    System.out.println(m.toString());
+                    board.applyMove(m);
+                    print( board );
+                    break;
+                case "at":
+                    if( args.length < 2)
+                    {
+                        error("Not enough arguments");
+                        break;
+                    }
+                    int index = BitBoard.indexFromString(args[1]);
+                    if( index < 0 )
+                    {
+                        error("Index not valid");
+                        break;
+                    }
+                    System.out.println(BitBoard.VERBOSE[board.pieceAt(index)]);
+                    break;
+                case "print":
+                    print( board );
                     break;
                 case "reset":
                     board.reset();
                     break;
                 case "save":
-                    board.save( cl[1] );
+                    if( args.length < 2)
+                    {
+                        error("Not enough arguments");
+                        break;
+                    }
+                    try 
+                    {
+                        board.save( args[1] );
+                    } catch(IOException e) {
+                        error("Saving: " + e.getMessage() );
+                    }
                     break;
                 case "load":
-                    board.load( cl[1] );
+                    if( args.length < 2)
+                    {
+                        error("Not enough arguments");
+                        break;
+                    }
+                    try 
+                    {
+                        board.load( args[1] );
+                    } catch(IOException e) {
+                        error("Saving: " + e.getMessage() );
+                    }
                     break;
                 case "help":
                     System.out.println("There is no help...You are all alone");
+                    break;
+                case "hint":
+                    System.out.println("Not implemented");
                     break;
                 case "level":
                     System.out.println("Not implemented");
@@ -85,12 +129,23 @@ public class Main
                 case "black":
                     System.out.println("Not implemented");
                 default:
-                    System.out.println("Not supported");
+                    error("I don't understand");
                     break;
             }
             
         }
         
+    }
+    
+    private static void print(BitBoard board)
+    {
+        System.out.println( board.toString() );
+    }
+    
+    private static void error(String msg)
+    {
+        System.out.println("Error: " + msg);
+        System.out.println("Try help");
     }
     
 }
