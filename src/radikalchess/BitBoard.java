@@ -47,9 +47,17 @@ public final class BitBoard
     
     public static final int ALL_BITBOARDS = 14;
     
-    public static int SQUARE_BITS[];
+    public static final int MASK_TOP_ROW;
+    public static final int MASK_BOTTOM_ROW;
+    public static final int MASK_LEFT_COLUMN;
+    public static final int MASK_RIGHT_COLUMN;
+    public static final int MASK_BORDER;
     
-    public static String VERBOSE[];
+    public static final int MASK_INVALID;
+    
+    public static final int[] SQUARE_BITS;
+    
+    public static String[] VERBOSE;
     
     static 
     {
@@ -76,6 +84,40 @@ public final class BitBoard
         VERBOSE[ WHITE ] = "White";
         VERBOSE[ BLACK ] = "Black";
         
+        int bottom_row = 0;
+        int top_row = 0;
+        
+        for( int i = 0; i < COLUMNS; i++ )
+        {
+            bottom_row |= SQUARE_BITS[ i ];
+            top_row |= SQUARE_BITS[ ALL_SQUARES - i - 1 ];
+        }
+        
+        MASK_BOTTOM_ROW = bottom_row;
+        MASK_TOP_ROW = top_row;
+        
+        int left_column = 0;
+        int right_column = 0;
+        
+        for( int i = 0; i < ALL_SQUARES; i = indexTop(i))
+        {
+            left_column |= SQUARE_BITS[ i ];
+            right_column |= SQUARE_BITS[ i + COLUMNS - 1 ];
+        }
+        
+        MASK_LEFT_COLUMN = left_column;
+        MASK_RIGHT_COLUMN = right_column;
+        
+        MASK_BORDER = MASK_BOTTOM_ROW | MASK_TOP_ROW
+                    | MASK_LEFT_COLUMN | MASK_RIGHT_COLUMN; 
+        
+        
+        int invalid = 0;
+        for( int i = 31; i >= ALL_SQUARES; i-- )
+        {
+            invalid |= ( 1 << i );
+        }
+        MASK_INVALID = invalid;
     }
     
     
@@ -87,6 +129,11 @@ public final class BitBoard
         final int col = ( (int) Character.toUpperCase( str.charAt(0) ) ) - 65 ;
         if( col < 0 || col >= COLUMNS ) return -1;
         return row * COLUMNS + col;
+    }
+    
+    public static int indexFromRowColumn(int row, int col)
+    {
+        return row * COLUMNS +col;
     }
     
     public static String indexToString(int pos)
@@ -135,6 +182,27 @@ public final class BitBoard
     public static int pieceColor(int piece)
     {
         return piece % 2;
+    }
+    
+    public static void print(int bitboard)
+    {
+        if( (bitboard & MASK_INVALID) != 0 ) {
+            System.out.println("Invalid Bitboard");
+            return;
+        }
+        String pr = "";
+        for( int row = ROWS - 1; row >= 0; row-- )
+        {
+            for( int col = 0; col < COLUMNS; col++ )
+            {
+                int i = indexFromRowColumn( row,col );
+                if( (bitboard & SQUARE_BITS[i]) == 0 )
+                    pr += " o";
+                else pr += " x";
+            }
+            System.out.println(pr);
+            pr = "";
+        }
     }
     
     // Static part ends
