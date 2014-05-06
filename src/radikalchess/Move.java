@@ -71,24 +71,21 @@ public final class Move
         private int capturedPiece;
         private int sourceSquare;
         private int destinationSquare;
+        private BitBoard board;
         
-        public MoveBuilder move(int movingPiece) {
-            this.movingPiece = movingPiece;
-            return this;
-        }
-
-        public MoveBuilder capture(int capturedPiece) {
-            this.capturedPiece = capturedPiece;
-            return this;
+        public MoveBuilder(BitBoard board) {
+            this.board = board;
         }
 
         public MoveBuilder from(int sourceSquare) {
             this.sourceSquare = sourceSquare;
+            this.movingPiece = board.pieceAt(sourceSquare);
             return this;
         }
 
         public MoveBuilder to(int destinationSquare) {
             this.destinationSquare = destinationSquare;
+            this.capturedPiece = board.pieceAt(destinationSquare);
             return this;
         }
         

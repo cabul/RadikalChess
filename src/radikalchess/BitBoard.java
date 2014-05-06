@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import static radikalchess.Move.*;
 
 public final class BitBoard 
@@ -12,8 +13,6 @@ public final class BitBoard
     
     // Static utilities, definitions, etc.
 
-    public static final String MagicString = "Radikal Chess";
-    
     public static final int WHITE = 1;
     public static final int BLACK = 0;
     
@@ -68,16 +67,16 @@ public final class BitBoard
         }
         
         VERBOSE = new String[ 13 ];
-        VERBOSE[ WHITE_PAWN   ] = "\u2659";
-        VERBOSE[ WHITE_BISHOP ] = "\u2657";
-        VERBOSE[ WHITE_ROOK   ] = "\u2656";
-        VERBOSE[ WHITE_QUEEN  ] = "\u2655";
-        VERBOSE[ WHITE_KING   ] = "\u2654";
-        VERBOSE[ BLACK_PAWN   ] = "\u265F";
-        VERBOSE[ BLACK_BISHOP ] = "\u265D";
-        VERBOSE[ BLACK_ROOK   ] = "\u265C";
-        VERBOSE[ BLACK_QUEEN  ] = "\u265B";
-        VERBOSE[ BLACK_KING   ] = "\u265A";
+        VERBOSE[ WHITE_PAWN   ] = "p"; //"\u2659";
+        VERBOSE[ WHITE_BISHOP ] = "b"; //"\u2657";
+        VERBOSE[ WHITE_ROOK   ] = "r"; //"\u2656";
+        VERBOSE[ WHITE_QUEEN  ] = "q"; //"\u2655";
+        VERBOSE[ WHITE_KING   ] = "k"; //"\u2654";
+        VERBOSE[ BLACK_PAWN   ] = "P"; //"\u265F";
+        VERBOSE[ BLACK_BISHOP ] = "B"; //"\u265D";
+        VERBOSE[ BLACK_ROOK   ] = "R"; //"\u265C";
+        VERBOSE[ BLACK_QUEEN  ] = "Q"; //"\u265B";
+        VERBOSE[ BLACK_KING   ] = "K"; //"\u265A";
         
         VERBOSE[ EMPTY_SQUARE ] = " ";
         
@@ -208,7 +207,7 @@ public final class BitBoard
     // Static part ends
     // Object part 
     
-    int turn;
+    private int turn;
     private int bitBoards[];
     private int bitSquares[];
     
@@ -228,6 +227,7 @@ public final class BitBoard
                         , ALL_SQUARES );
         
         this.turn = target.turn;
+        
         return true;
     }
     
@@ -236,16 +236,6 @@ public final class BitBoard
         BitBoard b = new BitBoard();
         b.clone(this);
         return b;
-    }
-    
-    public int[] convert()
-    {
-        int[] conv = new int[ ALL_SQUARES ];
-        for ( int i = 0; i < ALL_SQUARES; i++ )
-        {
-            conv[ i ] = pieceAt( i );
-        }
-        return conv;
     }
     
     @Override
@@ -317,7 +307,7 @@ public final class BitBoard
              + VERBOSE[player()] + " to move";
     }
     
-    public void reset()
+    public BitBoard reset()
     {
         empty();
         
@@ -341,6 +331,7 @@ public final class BitBoard
         
         turn = 1;
         
+        return this;
     }
     
     public int pieceAt( int square )
@@ -353,7 +344,7 @@ public final class BitBoard
         return bitBoards[type];
     }
     
-    public void applyMove( Move move )
+    public BitBoard applyMove( Move move )
     {
         final int type = move.moveType;
         removePiece( move.sourceSquare, move.movingPiece );
@@ -369,47 +360,46 @@ public final class BitBoard
         
         turn++;
         
+        return this;
     }
     
-    public void save(String path) throws IOException
+    public static void save(BufferedWriter bw, ArrayList<BitBoard> list) throws IOException
     {
-        try (BufferedWriter bw = new BufferedWriter( new FileWriter ( path ) )) {
-            bw.newLine();
-            bw.write(MagicString);
-            bw.newLine();
-            bw.write(""+turn);
-            bw.newLine();
-            bw.newLine();
-            for ( int i = 0; i < ALL_SQUARES; i++ )
+        if( list.isEmpty() ) return;
+        bw.write("FIRST " + list.get(0).turn ); bw.newLine();
+        bw.write("TURNS " + list.size()); bw.newLine();
+        for( BitBoard b : list)
+        {
+            bw.write("BEGIN"); bw.newLine();
+            for( int i = 0; i < ALL_SQUARES; i++ )
             {
-                int piece = pieceAt( i );
-                if ( piece != EMPTY_SQUARE )
+                int piece = b.pieceAt( i );
+                if( piece != EMPTY_SQUARE )
                 {
-                    bw.write( i + " " + piece);
-                    bw.newLine();
+                    bw.write( i + " " + piece); bw.newLine();
                 }
             }
-            bw.newLine();
-            bw.write(toString());
-            bw.newLine();
+            bw.write("END"); bw.newLine();
         }
     }
     
-    public void load(String path) throws IOException
+    public static void load(BufferedReader br, ArrayList<BitBoard> list) throws IOException
     {
-        empty();
-        try (BufferedReader br = new BufferedReader( new FileReader( path ) )) {
-            String line = br.readLine();
-            System.out.println(line);
+        list.clear();
+        int turn = Integer.parseInt( br.readLine().split(" ")[1] );
+        int size = Integer.parseInt( br.readLine().split(" ")[1] );
+        for( int i = 0; i < size; i++ )
+        {
+            BitBoard b = new BitBoard().empty();
             br.readLine();
-            turn = Integer.parseInt( br.readLine() );
-            br.readLine();
-            String[] aux;
-            while( ! ( line = br.readLine() ).equals("") )
+            String line;
+            while( ! ( line = br.readLine()).equals("END") )
             {
-                aux = line.split(" ");
-                addPiece( Integer.parseInt(aux[0]), Integer.parseInt(aux[1]) );
+                String[] aux = line.split(" ");
+                b.addPiece( Integer.parseInt( aux[0] ), Integer.parseInt( aux[1] ));
             }
+            b.turn = turn + i;
+            list.add( b );
         }
             
     }
@@ -419,9 +409,14 @@ public final class BitBoard
         return turn % 2;
     }
     
+    public int turn()
+    {
+        return turn;
+    }
+    
     // PRIVATE
     
-    private void empty()
+    private BitBoard empty()
     {
         for( int i = 0; i < ALL_BITBOARDS; i++ )
         {
@@ -431,6 +426,7 @@ public final class BitBoard
         {
             bitSquares[ i ] = EMPTY_SQUARE;
         }
+        return this;
     }
     
     private void addPiece( int square, int piece )
