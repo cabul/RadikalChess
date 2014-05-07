@@ -173,6 +173,26 @@ public final class BitBoard
         return pos + 1;
     }
     
+    public static boolean indexAtLeft(int pos)
+    {
+        return pos % COLUMNS == 0;
+    }
+    
+    public static boolean indexAtRight(int pos)
+    {
+        return ( pos + 1 ) % COLUMNS == 0;
+    }
+    
+    public static boolean indexAtTop(int pos)
+    {
+        return pos >= ALL_SQUARES - COLUMNS;
+    }
+    
+    public static boolean indexAtBottom(int pos)
+    {
+        return pos < COLUMNS;
+    }
+    
     public static boolean pieceIs(int piece, int mask)
     {
         return ( (piece & mask) == mask);
@@ -181,6 +201,11 @@ public final class BitBoard
     public static int pieceColor(int piece)
     {
         return piece % 2;
+    }
+    
+    public static int oppositeColor(int color)
+    {
+        return pieceColor( color + 1 );
     }
     
     public static void print(int bitboard)

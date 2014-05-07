@@ -68,6 +68,11 @@ public class Main
                     }
                     turn.to(aux);
                     Move m = turn.build();
+                    if( !stack.moves().contains(m) )
+                    {
+                        error("Invalid move");
+                        break;
+                    }
                     System.out.println(m.toString());
                     stack.apply( m );
                     stack.printTop();
@@ -134,7 +139,7 @@ public class Main
                     }
                     else 
                     {
-                        stack.move( Integer.parseInt(args[1]));
+                        stack.turn( Integer.parseInt(args[1]));
                         stack.printTop();
                     }
                     break;
@@ -142,7 +147,28 @@ public class Main
                     System.out.println("There is no help...You are all alone");
                     break;
                 case "hint":
-                    System.out.println("Not implemented");
+                    if( args.length < 2 )
+                    {
+                        System.out.println(stack.moves().size() + " Moves");
+                        for( Move move : stack.moves())
+                        {
+                            System.out.println(move.toString());
+                        }
+                    } else 
+                    {
+                        int sq = BitBoard.indexFromString( args[1] );
+                        ArrayList<Move> available = new ArrayList<>();
+                        for( Move move : stack.moves())
+                        {
+                            if( move.sourceSquare == sq )
+                                available.add( move );
+                        }
+                        System.out.println(available.size() + " Moves");
+                        for( Move move : available)
+                        {
+                            System.out.println(move.toString());
+                        }
+                    }
                     break;
                 case "level":
                     System.out.println("Not implemented");
@@ -164,7 +190,6 @@ public class Main
     private static void error(String msg)
     {
         System.out.println("Error: " + msg);
-        System.out.println("Try help");
     }
     
     
@@ -172,12 +197,15 @@ public class Main
         
         private ArrayList<BitBoard> list;
         
+        private ArrayList<Move> moves;
+        
         private int head;
         
         public Stack()
         {
             head = 0;
             list = new ArrayList<>();
+            moves = new ArrayList<>();
         }
         
         public BitBoard current()
@@ -192,6 +220,7 @@ public class Main
                     
             list.add( board );
             head++;
+            check();
         }
         
         public void apply(Move move)
@@ -204,6 +233,7 @@ public class Main
             if( head == list.size())
                 return false;
             head++;
+            check();
             return true;
         }
         
@@ -212,6 +242,7 @@ public class Main
             if( head == 1 )
                 return false;
             head--;
+            check();
             return true;
         }
         
@@ -234,6 +265,7 @@ public class Main
                     BitBoard.load( reader, list);
                 }
                 head = list.size();
+                check();
                 return true;
             } catch (IOException ex) {
                 return false;
@@ -245,13 +277,24 @@ public class Main
             System.out.println( current().toString());
         }
         
-        public boolean move(int head)
+        public boolean turn(int head)
         {
             if( head > 0 && head <= list.size() ) 
             {
                 this.head = head;
+                check();
                 return true;
             } else return false;
+        }
+        
+        public ArrayList<Move> moves()
+        {
+            return moves;
+        }
+        
+        private void check()
+        {
+            moves = new MoveGenerator(current()).generate();
         }
         
     }

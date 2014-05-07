@@ -55,13 +55,26 @@ public final class Move
         
     }
     
-    public boolean equals(Move other)
+    @Override
+    public boolean equals(Object o)
     {
+        if( !(o instanceof Move) ) return false;
+        Move other = (Move) o;
         return other.movingPiece == movingPiece
             && other.capturedPiece == capturedPiece
             && other.sourceSquare == sourceSquare
             && other.destinationSquare == destinationSquare
             && other.moveType == moveType;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + this.movingPiece;
+        hash = 97 * hash + this.capturedPiece;
+        hash = 97 * hash + this.sourceSquare;
+        hash = 97 * hash + this.destinationSquare;
+        return hash;
     }
     
     
