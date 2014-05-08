@@ -11,7 +11,7 @@ Modifications
 The following rules have been added:
 - Pawns will always move just one field at a time
 - There is no castling
-- No-capture moves have to threaten the king or at least approach it (as of euclidian distance)
+- No-capture moves have to threaten the king or at least approach it (as of manhattan distance)
 - The game ends when there is any player with no moves left or his king checkmate
 
 Furthermore the classic chess board has been modified:
