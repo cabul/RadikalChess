@@ -1,9 +1,9 @@
-package radikalchess;
+package radikalchess.old;
 
 import java.util.ArrayList;
 
-import static radikalchess.BitBoard.*;
-import radikalchess.Move.MoveBuilder;
+import static radikalchess.old.BitBoard.*;
+import radikalchess.old.Move.MoveBuilder;
 
 public class MoveGenerator {
 

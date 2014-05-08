@@ -1,4 +1,4 @@
-package radikalchess;
+package radikalchess.old;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import static radikalchess.Move.MoveBuilder;
+import static radikalchess.old.Move.MoveBuilder;
 
 public class Main
 {

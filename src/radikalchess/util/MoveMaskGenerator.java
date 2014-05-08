@@ -4,14 +4,14 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import radikalchess.BitBoard;
-import static radikalchess.BitBoard.*;
+import radikalchess.old.BitBoard;
+import static radikalchess.old.BitBoard.*;
 
 public class MoveMaskGenerator {
     
     public static void main(String[] args) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( System.out ))) {
-        //try (BufferedWriter writer = new BufferedWriter( new FileWriter("res/movemask.java"))) {    
+        //try (BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( System.out ))) {
+        try (BufferedWriter writer = new BufferedWriter( new FileWriter("res/movemask.java"))) {    
             generateMoveMask( writer );
             generateDistanceMask( writer );
         }   
@@ -27,6 +27,8 @@ public class MoveMaskGenerator {
     }
 
     private static void generateKingMask(BufferedWriter bw) throws IOException {
+        System.out.println("King Moves");
+        System.out.println("----------");
         String king = "KING_MASK";
         String prefix = "public static final int[][] ";
         String suffix = " = new int["+ALL_SQUARES+"][];";
@@ -57,15 +59,20 @@ public class MoveMaskGenerator {
             if( !atTop && !atLeft) masks[count++] = SQUARE_BITS[ indexTop(indexLeft(square))];
             
             bw.write( king+"["+square+"]"+" = new int["+count+"];"); bw.newLine();
+            System.out.println(indexToString(square));
+            int debug = 0;
             for( int i = 0; i < count; i++ )
             {
                 bw.write( king+"["+square+"]["+i+"] = "+masks[i]+";"); bw.newLine();
+                debug |= masks[i];
             } 
+            BitBoard.print(debug);
         }
         bw.write("}"); bw.newLine();    
     }
 
     private static void generateRookMask(BufferedWriter bw) throws IOException {
+        
         String rook = "ROOK_MASK";
         String prefix = "public static final int[][][] ";
         String suffix = " = new int["+ALL_SQUARES+"][][];";
@@ -111,6 +118,9 @@ public class MoveMaskGenerator {
             
             if( steps[ray] > 0 ) ray++;
             
+            int debug = 0;
+            System.out.println(indexToString(square));
+            
             bw.write( rook+"["+square+"]"+" = new int["+ray+"][];"); bw.newLine();
             for( int r = 0; r < ray; r++ )
             {
@@ -118,13 +128,18 @@ public class MoveMaskGenerator {
                 for( int s = 0; s < steps[r]; s++ )
                 {
                     bw.write( rook+"["+square+"]["+r+"]["+s+"] = "+buffer[r][s]+";"); bw.newLine();
+                    debug |= buffer[r][s];
                 }
             }
+            
+            BitBoard.print(debug);
         }
         bw.write("}"); bw.newLine();
     }
 
     private static void generateBishopMask(BufferedWriter bw) throws IOException {
+        System.out.println("Bishop Moves");
+        System.out.println("------------");
         String bishop = "BISHOP_MASK";
         String prefix = "public static final int[][][] ";
         String suffix = " = new int["+ALL_SQUARES+"][][];";
@@ -171,6 +186,9 @@ public class MoveMaskGenerator {
             
             if( steps[ray] > 0 ) ray++;
             
+            int debug = 0;
+            System.out.println(indexToString(square));
+            
             bw.write( bishop+"["+square+"]"+" = new int["+ray+"][];"); bw.newLine();
             for( int r = 0; r < ray; r++ )
             {
@@ -178,8 +196,10 @@ public class MoveMaskGenerator {
                 for( int s = 0; s < steps[r]; s++ )
                 {
                     bw.write( bishop+"["+square+"]["+r+"]["+s+"] = "+buffer[r][s]+";"); bw.newLine();
+                    debug |= buffer[r][s];
                 }
             }
+            BitBoard.print(debug);
         }
         bw.write("}"); bw.newLine();
     }
@@ -210,6 +230,8 @@ public class MoveMaskGenerator {
                 }
                 
                 bw.write( distance + "["+king+"]["+piece+"] = "+ mask + ";"); bw.newLine();
+                System.out.println("King: " + indexToString(king) + " Piece: " + indexToString(piece));
+                BitBoard.print(mask);
             }
         }
         bw.write("}"); bw.newLine();
