@@ -16,6 +16,11 @@ public enum Piece
     
     public static enum Type {
         PAWN, BISHOP, ROOK, QUEEN, KING;
+        @Override
+        public String toString()
+        {
+            return super.toString().toLowerCase();
+        }
     }
     
     public final Type type;
@@ -29,7 +34,7 @@ public enum Piece
 
     @Override
     public String toString() {
-        return color.toString().toLowerCase()+" "+type.toString().toLowerCase();
+        return color.toString()+" "+type.toString();
     }
     
     public int value()

@@ -1,6 +1,39 @@
 package radikalchess;
 
+import java.util.Iterator;
+
 public class Position {
+
+    public static class PositionList extends ReadonlyList<Position>{}
+
+    public static Iterable<Position> ALL;
+    
+    static 
+    {
+        ALL = new Iterable<Position>() {
+            @Override
+            public Iterator<Position> iterator() {
+                return new Iterator() {
+                    private int head;
+
+                    @Override
+                    public boolean hasNext() {
+                        return head < Config.ALL_SQUARES;
+                    }
+
+                    @Override
+                    public Position next() {
+                        return new Position( head/Config.COLUMNS , head++%Config.COLUMNS );
+                    }
+
+                    @Override
+                    public void remove() {
+                    }
+                };
+            }
+        };
+    }
+    
     
     public final int row;
     public final int col;
@@ -39,17 +72,6 @@ public class Position {
             return null;
         }
         
-    }
-    
-    public static Position fromIndex(long index)
-    {
-        int hash = Long.numberOfTrailingZeros(index);
-        return fromHash( hash );
-    }
-    
-    public static Position fromHash(int hash)
-    {
-        return new Position( hash / Config.COLUMNS , hash % Config.COLUMNS );
     }
     
     public int distance(Position other)

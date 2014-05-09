@@ -3,11 +3,11 @@ package radikalchess;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import radikalchess.Move.MoveList;
 
 public final class Game {
     
-    private ArrayList<Move> history;
+    private MoveList history;
     private Board init;
     private Board current;
     private int head;
@@ -15,7 +15,7 @@ public final class Game {
     public Game()
     {
         init = Board.init();
-        history = new ArrayList<>();
+        history = new MoveList();
         reset();
     }
     
@@ -74,8 +74,10 @@ public final class Game {
         bw.newLine();
         bw.write("/");
         bw.newLine();
-        for(Move move : history)
-            bw.write(move.sourceSquare+" "+move.destinationSquare+"\n");
+        for(Move move : history) {
+            bw.write(move.toString());
+            bw.newLine();
+        }
         bw.write("/");
         bw.newLine();
     }
@@ -90,12 +92,7 @@ public final class Game {
         init.load(board);
         while(!"/".equals(line = br.readLine()))
         {
-            String[] words = line.split(" ");
-            history.add
-              (new Move.Builder(board())
-                    .from(Position.fromString(words[0]))
-                    .to(Position.fromString(words[1]))
-                    .build());
+            history.add(Move.fromString(line));
         }
         head = history.size();
         move_head();

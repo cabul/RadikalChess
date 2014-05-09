@@ -3,14 +3,13 @@ package radikalchess;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
+import radikalchess.Position.PositionList;
 
 public class Board implements Iterable<Position>
 {
     private HashMap<Position,Piece> map;
     
-    private EnumMap<Color,Statistics> stats;
-    
-    private Move[] moves;
+    private EnumMap<Color,Info> details;
     
     private int turn;
     
@@ -42,9 +41,9 @@ public class Board implements Iterable<Position>
     }
     
     public Board() {
-        map = new HashMap<>();
-        stats = new EnumMap( Color.class );
-        clean();
+        map = new HashMap<>(Config.ALL_SQUARES);
+        details = new EnumMap( Color.class );
+        clear();
     }
     
     @Override
@@ -52,17 +51,17 @@ public class Board implements Iterable<Position>
     {
         Board b = new Board();
         b.map = (HashMap)map.clone();
-        b.stats = stats.clone();
+        b.details = details.clone();
         b.turn = turn;
         return b;
     }
     
-    private void clean()
+    private void clear()
     {
         map.clear();
-        stats.clear();
-        stats.put(Color.WHITE,new Statistics());
-        stats.put(Color.BLACK,new Statistics());
+        details.clear();
+        details.put(Color.WHITE,new Info());
+        details.put(Color.BLACK,new Info());
     }
     
     public Color player()
@@ -82,57 +81,44 @@ public class Board implements Iterable<Position>
     
     public Board apply(Move move)
     {
-        if( move.isCapture() )
-            delete( move.capturedPiece, move.destinationSquare );
-        delete( move.movingPiece, move.sourceSquare );
-        if( move.isPromotion() )
-            add( move.movingPiece.promote(), move.destinationSquare );
-        else
-            add( move.movingPiece, move.destinationSquare );
+        Piece mov = at(move.from);
+        Piece cap = at(move.to);
+        if( mov == null ) return null;
+        if( cap != null )
+            delete( cap, move.to );
+        delete( mov, move.from );
+        if( move.isPromotion() ) 
+            add( mov.promote(), move.to );
+        else add( mov, move.to );
         
         turn++;
         
-        generateMoves();
         return this;
     }
     
-    public Move[] moves()
+    public Info info(Color color)
     {
-        if( moves == null ) generateMoves();
-        return moves;
-    }
-    
-    public Statistics stats(Color color)
-    {
-        return stats.get(color).clone();
-    }
-    
-    public Iterable<Position> all(Color color)
-    {
-        return BitBoard.traverse(stats.get(color).pieces);
+        return details.get(color);
     }
     
     private void add(Piece piece, Position pos)
     {
         map.put(pos, piece);
-        Statistics stat = stats.get(piece.color);
-        stat.value += piece.value();
-        stat.pieces |= pos.index();
-        if( piece.type == Piece.Type.KING ) stats.get(piece.color).king = pos;
+        Info info = details.get(piece.color);
+        info.value += piece.value();
+        info.pieces.add(pos);
+        if( piece.type == Piece.Type.KING ) info.king = pos;
     }
     
     private void delete(Piece piece, Position pos)
     {
         map.remove(pos);
-        Statistics stat = stats.get(piece.color);
-        stat.value -= piece.value();
-        stat.pieces ^= pos.index();
+        Info info = details.get(piece.color);
+        info.value -= piece.value();
+        info.pieces.remove(pos);
+        if( piece.type == Piece.Type.KING ) info.king = null;
     }
     
-    private void generateMoves() {
-        
-    }
-
     @Override
     public Iterator<Position> iterator() {
         return map.keySet().iterator();
@@ -151,7 +137,7 @@ public class Board implements Iterable<Position>
     
     public void load(String str)
     {
-        clean();
+        clear();
         String[] lines = str.split("\n");
         for( int i = 0; i < lines.length; i++ )
         {
@@ -159,6 +145,51 @@ public class Board implements Iterable<Position>
             String piece = words[0].toUpperCase()+"_"+words[1].toUpperCase();
             add( Piece.valueOf(piece), Position.fromString(words[2]));
         } 
+    }
+    
+    public static class Info
+    {
+        private Position king;
+        private PositionList pieces;
+        private PositionList attacks;
+        private int value;
+        
+        private Info()
+        {
+            pieces = new PositionList();
+            attacks = new PositionList();
+            value = 0;
+        }
+        
+        public Iterable<Position> pieces()
+        {
+            return pieces.ro;
+        }
+        
+        public Iterable<Position> attacks()
+        {
+            return attacks.ro;
+        }
+        
+        public int value()
+        {
+            return value;
+        }
+        
+        public Position king()
+        {
+            return king;
+        }
+        
+        @Override
+        public Info clone()
+        {
+            Info info = new Info();
+            info.pieces = (PositionList) pieces.clone();
+            info.king = king.clone();
+            info.value = value;
+            return info;
+        }
     }
     
 }

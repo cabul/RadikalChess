@@ -7,8 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
+import radikalchess.Move.MoveList;
+import radikalchess.Position.PositionList;
 
 public class Test {
     
@@ -26,7 +27,6 @@ public class Test {
     }
     
     private static Command DEFAULT;
-    private static Command NOT_IMPLEMENTED;
     
     private static void println(Object msg) throws IOException
     {
@@ -59,6 +59,7 @@ public class Test {
     }
     
     public static void main(String[] args) throws IOException {
+        
         cin = new BufferedReader(new InputStreamReader(System.in));
         cout = new BufferedWriter(new OutputStreamWriter(System.out));
         cerr = new BufferedWriter(new OutputStreamWriter(System.err));
@@ -66,12 +67,22 @@ public class Test {
         commands = new HashMap();
         
         final Game game = new Game();
+        final PrettyPrinter printer = new PrettyPrinter();
         
         DEFAULT = new Command(){
             @Override
             public Return execute(String[] args) throws IOException {
-                println("I don't understand '" + args[0]+"'");
-                println("Try help");
+                Move move = Move.fromString(args[0]);
+                MoveList moves = new MoveList();
+                Generator.genAllMoves(moves,game.board(), game.player());
+                if( move != null ){
+                    if( moves.contains(move) ){
+                        game.advance(move);
+                    } else {
+                        return errorln("No valid Move: '"+move+"'");
+                    }
+                }
+                else return errorln("I don't understand '" + args[0]+"'");
                 return Return.PRINT;
             }
         };
@@ -98,7 +109,8 @@ public class Test {
         commands.put("help", new Command(){
             @Override
             public Return execute(String[] args) throws IOException {
-                println("TODO: help");
+                for( String c : commands.keySet() )
+                    println(c);
                 return Return.VOID;
             } 
         });
@@ -107,7 +119,7 @@ public class Test {
             @Override
             public Return execute(String[] args) throws IOException {
                 println("Turn " + game.turn());
-                println(new PrettyPrinter(game.board()));
+                printer.clear().load(game.board()).print(cout);
                 println(game.player()+" to move");
                 return Return.VOID;
             }
@@ -123,25 +135,6 @@ public class Test {
                     else println(pos + ": " + game.board().at(pos));
                 }
                 return Return.VOID;
-            }
-        });
-        
-        commands.put("move", new Command() {
-            @Override
-            public Return execute(String[] args) throws IOException {
-                if( args.length < 3 ) return errorln("Not enough arguments");
-                Move.Builder turn = new Move.Builder(game.board());
-                Position pos;
-                pos = Position.fromString(args[1]);
-                if( pos == null ) return errorln("Wrong Position Format: '"+args[1]+"'");
-                turn.from(pos);
-                pos = Position.fromString(args[2]);
-                if( pos == null ) return errorln("Wrong Position Format: '"+args[2]+"'");
-                turn.to(pos);
-                Move move = turn.build();
-                println(move);
-                game.advance(move);
-                return Return.PRINT;
             }
         });
         
@@ -187,27 +180,91 @@ public class Test {
             }
         });
         
-        commands.put("hint", new Command() {
-            @Override
-            public Return execute(String[] args) throws IOException {
-                return Return.VOID;
-            }
-        });
-        
         commands.put("mark", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                ArrayList<Position> marks = new ArrayList<>();
+                PositionList marks = new PositionList();
                 for( int i = 1; i < args.length; i++ )
                 {
                     marks.add( Position.fromString(args[i]) );
                 }
-                println(new PrettyPrinter(game.board()).highlight( BitBoard.mask(marks)));
+                printer.clear().load(game.board()).highlight(marks).print(cout);
                 return Return.VOID;
             }
-        }); 
-       
+        });
         
+        commands.put("color", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                if( args.length < 2 ) return errorln("Which Color?");
+                Color color = Color.fromString(args[1]);
+                if( color == null ) return errorln("'" + args[1] + "' is not a Color");
+                PositionList marks = new PositionList();
+                for( Position pos : game.board().info(color).pieces())
+                    marks.add(pos);
+                printer.clear().load(game.board()).highlight(marks).print(cout);
+                return Return.VOID;
+            }
+        });
+        
+        commands.put("attacks", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                if( args.length < 2 ) return errorln("Which Position?");
+                Color color  =  Color.fromString(args[1]);
+                Position pos = Position.fromString(args[1]);
+                PositionList marks = new PositionList();
+                if( color != null ) {
+                    Generator.genAllAttacks(marks, game.board(), color);
+                } 
+                else if( pos != null ) {
+                    Piece piece = game.board().at(pos);
+                    if( piece == null ) return errorln("No piece at "+pos);
+                    Generator.genAttacks(marks, game.board(), piece.color, pos);
+                }
+                else {
+                    return errorln("Wrong argument: '"+args[1]+"'");
+                }
+                printer.clear().load(game.board()).highlight(marks).print(cout);
+                return Return.VOID;
+            }
+        });
+        
+        commands.put("test", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                Generator.test(cerr,args[1]);
+                return Return.VOID;
+            }
+        });
+        
+        commands.put("reset", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                game.reset();
+                return Return.PRINT;
+            }
+        });
+        commands.put("moves", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                MoveList moves = new MoveList();
+                Color color = Color.fromString(args[1]);
+                Position pos = Position.fromString(args[1]);
+                if( color != null ) {
+                    Generator.genAllMoves(moves, game.board(), color);
+                    printer.clear().load(game.board()).highlight(moves.from()).print(cout);
+                }
+                else if( pos != null ) {
+                    Piece piece = game.board().at(pos);
+                    if( piece == null ) return errorln("No piece at "+pos);
+                    Generator.genMoves(moves, game.board(), piece.color, pos);
+                    printer.clear().load(game.board()).highlight(moves.to()).print(cout);
+                }
+                return Return.VOID;
+            }
+        });
+       
         repl();
         
     }

@@ -9,4 +9,6 @@ public class Config {
     
     public static final int ALL_SQUARES = ROWS * COLUMNS;
     
+    public static final int LIST_SIZE = 8;
+    
 }

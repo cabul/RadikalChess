@@ -3,11 +3,9 @@ package radikalchess;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.EnumMap;
-import java.util.HashMap;
+import radikalchess.Position.PositionList;
 
-import static radikalchess.Config.*;
-
-public class PrettyPrinter {
+public final class PrettyPrinter {
     
     private static final int ITEM_LENGTH = 2;
     private static final EnumMap<Piece,String> CODE;
@@ -16,10 +14,8 @@ public class PrettyPrinter {
     private static final int LINE_COUNT = 3 + Config.ROWS * 2;
     private static final int CHAR_COUNT = LINE_LENGTH * LINE_COUNT;
     
+    private static final String MARK = "##";
     private static final String EMPTY = "  ";
-    
-    private static final String MOVE = "##";
-    private static final String CAPTURE = "$$";
     
     static
     {
@@ -37,28 +33,26 @@ public class PrettyPrinter {
     }
     
     private StringBuilder builder;
-    private String[] items;
     
-    public PrettyPrinter(Board board)
+    public PrettyPrinter()
     {
         builder = new StringBuilder();
         init( builder );
-        items = new String[ Config.ALL_SQUARES ];
-        this.load(board);
     }
     
     @Override
     public String toString()
     {
-        init( builder );
-        
-        for (int i = 0; i < items.length; i++) {
-            
-            int offset = offset(i);
-            builder.replace(offset, offset+ITEM_LENGTH, items[i]);
-           
-        }
         return builder.toString();
+    }
+    
+    public void print( BufferedWriter bw ) throws IOException
+    {
+        String[] lines = builder.toString().split("\n");
+        for( String str : lines )
+        {
+            bw.write(str); bw.newLine();
+        }
     }
     
     private int offset(Position pos)
@@ -68,43 +62,34 @@ public class PrettyPrinter {
              + pos.col * ( 3 + ITEM_LENGTH );
     }
     
-    private int offset(int hash)
+    private void put(String str, Position pos)
     {
-        return offset( Position.fromHash(hash));
+        int offset = offset(pos);
+        builder.replace(offset, offset+ITEM_LENGTH,str);
     }
     
-    private void load(Board board)
+    private void put(Piece piece, Position pos)
     {
-        clear( items );
-        for( Position pos : board)
-        {
-            items[ pos.hashCode() ] = CODE.get( board.at(pos));
-        }
+        if( piece == null ) put( EMPTY, pos );
+        else put( CODE.get( piece ), pos);
     }
     
-    public PrettyPrinter highlight(long mask)
+    public PrettyPrinter highlight(PositionList mask)
     {
-        for( Position pos : BitBoard.traverse(mask))
-            items[pos.hashCode()] = (items[pos.hashCode()].equals(EMPTY))?MOVE:CAPTURE;
-            
+        for( Position pos : mask ) put( MARK, pos );
         return this;
     }
     
-    public void print(BufferedWriter bw) throws IOException
+    public PrettyPrinter load(Board board)
     {
-        bw.write( toString() );
+        for( Position pos : board ) put( board.at(pos), pos );
+        return this;
     }
     
-    public void println(BufferedWriter bw) throws IOException
+    public PrettyPrinter clear()
     {
-        print(bw);
-        bw.newLine();
-    }
-
-    private static void clear(String[] items)
-    {
-        for (int i = 0; i < items.length; i++)
-            items[i] = EMPTY;
+        init( builder );
+        return this;
     }
     
     private static void init(StringBuilder sb)
