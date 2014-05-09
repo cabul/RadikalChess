@@ -1,6 +1,5 @@
 package radikalchess;
 
-import java.util.Objects;
 import radikalchess.Position.PositionList;
 
 public class Move
@@ -57,6 +56,7 @@ public class Move
         final Move other = (Move) obj;
         return from.equals(other.from)
             && to.equals(other.to);
+        
     }
     
     public static Move fromString(String str)

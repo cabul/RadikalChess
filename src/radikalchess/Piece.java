@@ -37,6 +37,19 @@ public enum Piece
         return color.toString()+" "+type.toString();
     }
     
+    public static Piece fromString(String str)
+    {
+        try{
+            String[] words = str.split(" ");
+            if( words.length < 2 ) return null;
+            String piece = words[0].toUpperCase()+"_"+words[1].toUpperCase();
+            return Piece.valueOf(piece);
+        } catch(Exception ex)
+        {
+            return null;
+        }
+    }
+    
     public int value()
     {
         switch( type )

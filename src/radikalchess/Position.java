@@ -2,6 +2,8 @@ package radikalchess;
 
 import java.util.Iterator;
 
+// Position
+
 public class Position {
 
     public static class PositionList extends ReadonlyList<Position>{}
@@ -71,7 +73,6 @@ public class Position {
         } catch(Exception ex) {
             return null;
         }
-        
     }
     
     public int distance(Position other)
@@ -90,12 +91,8 @@ public class Position {
             return false;
         }
         if( !(obj instanceof Position) ) return false;
-        return hashCode() == ((Position)obj).hashCode();
-    }
-    
-    public long index()
-    {
-        return 1L << hashCode();
+        final Position other = (Position) obj;
+        return (row == other.row) && (col == other.col);
     }
     
     public boolean atTop()

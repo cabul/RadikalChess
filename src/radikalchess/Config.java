@@ -1,5 +1,7 @@
 package radikalchess;
 
+// Config
+
 public class Config {
     
     public static boolean DEBUG = true;

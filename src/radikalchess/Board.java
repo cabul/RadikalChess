@@ -41,7 +41,7 @@ public class Board implements Iterable<Position>
     }
     
     public Board() {
-        map = new HashMap<>(Config.ALL_SQUARES);
+        map = new HashMap<>(Config.LIST_SIZE*2);
         details = new EnumMap( Color.class );
         clear();
     }
@@ -87,7 +87,7 @@ public class Board implements Iterable<Position>
         if( cap != null )
             delete( cap, move.to );
         delete( mov, move.from );
-        if( move.isPromotion() ) 
+        if( move.isPromotion() && mov.type == Piece.Type.PAWN ) 
             add( mov.promote(), move.to );
         else add( mov, move.to );
         
@@ -142,8 +142,7 @@ public class Board implements Iterable<Position>
         for( int i = 0; i < lines.length; i++ )
         {
             String[] words = lines[i].split(" ");
-            String piece = words[0].toUpperCase()+"_"+words[1].toUpperCase();
-            add( Piece.valueOf(piece), Position.fromString(words[2]));
+            add( Piece.fromString(lines[i]), Position.fromString(words[2]));
         } 
     }
     
@@ -169,6 +168,16 @@ public class Board implements Iterable<Position>
         public Iterable<Position> attacks()
         {
             return attacks.ro;
+        }
+        
+        public int numPieces()
+        {
+            return pieces.size();
+        }
+        
+        public int numAttacks()
+        {
+            return attacks.size();
         }
         
         public int value()

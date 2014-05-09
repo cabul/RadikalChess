@@ -1,5 +1,7 @@
 package radikalchess;
 
+// Color
+
 public enum Color 
 { 
     WHITE,

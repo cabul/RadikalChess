@@ -14,6 +14,8 @@ public class Generator {
     private static final int MASK_LEFT = 1 << 3;
     private static final int MASK_RIGHT = 1 << 4;
 
+    private static final PositionList positionBuffer = new PositionList();
+    
     private enum Direction { 
         UP (MASK_UP),
         UP_RIGHT(MASK_UP+MASK_RIGHT),
@@ -44,7 +46,7 @@ public class Generator {
             return pos.row >= 0 && pos.row < Config.ROWS
                 && pos.col >= 0 && pos.col < Config.COLUMNS;
         }
-        
+    
     }
     
     private static class Ray implements Iterable<Position>
@@ -175,6 +177,7 @@ public class Generator {
     
     public static void genMoves(MoveList list, Board board, Color player, Position piece)
     {
+        if( board.at(piece) == null ) return;
         switch( board.at(piece).type ){
             case PAWN:
                 pawnMoves( list, board, player, piece );
@@ -202,6 +205,7 @@ public class Generator {
     
     public static void genAttacks(PositionList list, Board board,Color player,Position piece)
     {
+        if( board.at(piece) == null ) return;
         switch( board.at(piece).type ){
             case PAWN:
                 pawnAttacks( list, board, player, piece );
@@ -229,7 +233,8 @@ public class Generator {
                                   ? Direction.UP
                                   : Direction.DOWN;
         
-        if( (piece = dir.move(piece)) == null) return; // Nothing to do here
+        // if( (piece = dir.move(piece)) == null) return; // Nothing to do here
+        piece = dir.move(piece);
         if( (pos = Direction.LEFT.move(piece)) != null) {
             if( board.at(pos) == null)
                 list.add(pos);
@@ -246,20 +251,21 @@ public class Generator {
     
     private static void pawnMoves(MoveList list, Board board, Color player, Position piece)
     {
-        Position pos;
         Direction dir = ( player == Color.WHITE)
                                   ? Direction.UP
                                   : Direction.DOWN;
         
-        if( (pos = dir.move(piece)) == null) return; // Nothing to do here
-        list.add(new Move(piece,pos));
+        // if( (pos = dir.move(piece)) == null) return; // Nothing to do here
+        Position pos = dir.move(piece);
+        if( board.at(pos) == null)
+            list.add(new Move(piece,pos));
         
-        if( (pos = Direction.LEFT.move(piece)) != null) 
+        if( (pos = Direction.LEFT.move(dir.move(piece))) != null) 
         if( board.at(pos) != null)
         if( board.at(pos).color != player )
                 list.add(new Move(piece,pos));
         
-        if( (pos = Direction.RIGHT.move(piece)) != null) 
+        if( (pos = Direction.RIGHT.move(dir.move(piece))) != null) 
         if( board.at(pos) != null)
         if( board.at(pos).color != player )
             list.add(new Move(piece,pos));
@@ -287,15 +293,14 @@ public class Generator {
         final int distance = piece.distance(enemy_king);
         for( Ray ray : bishop_rays.get(piece) )
         for( Position pos : ray) {
-            if( pos.distance(enemy_king) > distance) break;
-            else {
-                if( board.at(pos) == null )
+            if( board.at(pos) == null ) {
+                if( pos.distance(enemy_king) < distance )
                     list.add(new Move(piece,pos)); // Empty square
-                else {
-                    if( board.at(pos).color != player ) 
-                        list.add(new Move(piece,pos)); // Attacking piece
-                    break; // Collision
-               }
+            }
+            else {
+                if( board.at(pos).color != player ) 
+                    list.add(new Move(piece,pos)); // Attacking piece
+                break; // Collision
             }
         }
     }
@@ -321,15 +326,14 @@ public class Generator {
         final int distance = piece.distance(enemy_king);
         for( Ray ray : rook_rays.get(piece) )
         for( Position pos : ray) {
-            if( pos.distance(enemy_king) > distance) break;
-            else {
-                if( board.at(pos) == null )
+            if( board.at(pos) == null ) {
+                if( pos.distance(enemy_king) < distance )
                     list.add(new Move(piece,pos)); // Empty square
-                else {
-                    if( board.at(pos).color != player ) 
-                        list.add(new Move(piece,pos)); // Attacking piece
-                    break; // Collision
-               }
+            }
+            else {
+                if( board.at(pos).color != player ) 
+                    list.add(new Move(piece,pos)); // Attacking piece
+                break; // Collision
             }
         }
     }
@@ -346,36 +350,34 @@ public class Generator {
         final int distance = piece.distance(enemy_king);
         for( Ray ray : bishop_rays.get(piece) )
         for( Position pos : ray) {
-            if( pos.distance(enemy_king) > distance) {
-               PositionList attacks = new PositionList();  // Checks if check
-               bishopAttacks(attacks,board,player,piece);
-               if( attacks.contains(enemy_king) ) list.add(new Move(piece,pos));
-               else break;
+            if( board.at(pos) == null ){
+                if( pos.distance(enemy_king) > distance) {
+                    rookAttacks(positionBuffer,board,player,pos);
+                    if( positionBuffer.contains(enemy_king) ) 
+                        list.add(new Move(piece,pos));
+                } else {
+                    list.add(new Move(piece,pos));
+                }
             } else {
-                if( board.at(pos) == null )
-                    list.add(new Move(piece,pos)); // Empty square
-                else {
-                    if( board.at(pos).color != player ) 
-                        list.add(new Move(piece,pos)); // Attacking piece
-                    break; // Collision
-               }
+                if( board.at(pos).color != player ) 
+                    list.add(new Move(piece,pos)); // Attacking piece
+                break; // Collision
             }
         }
         for( Ray ray : rook_rays.get(piece) )
         for( Position pos : ray) {
-            if( pos.distance(enemy_king) > distance) {
-               PositionList attacks = new PositionList();  // Checks if check
-               rookAttacks(attacks,board,player,piece);
-               if( attacks.contains(enemy_king) ) list.add(new Move(piece,pos));
-               else break;
+            if( board.at(pos) == null ){
+                if( pos.distance(enemy_king) > distance) {
+                    bishopAttacks(positionBuffer,board,player,pos);
+                    if( positionBuffer.contains(enemy_king) ) 
+                        list.add(new Move(piece,pos));
+                } else {
+                    list.add(new Move(piece,pos));
+                }
             } else {
-                if( board.at(pos) == null )
-                    list.add(new Move(piece,pos)); // Empty square
-                else {
-                    if( board.at(pos).color != player ) 
-                        list.add(new Move(piece,pos)); // Attacking piece
-                    break; // Collision
-               }
+                if( board.at(pos).color != player ) 
+                    list.add(new Move(piece,pos)); // Attacking piece
+                break; // Collision
             }
         }
     }
@@ -393,12 +395,17 @@ public class Generator {
     
     private static void kingMoves(MoveList list, Board board, Color player, Position piece)
     {
+        final Position enemy_king = board.info(player.enemy()).king();
+        final int distance = piece.distance(enemy_king);
         for( Position pos : king_moves.get(piece) ) {
             if( board.at(pos) != null )
             {
                 if( board.at(pos).color != player)
                     list.add( new Move(piece,pos) );
-            } else list.add( new Move(piece,pos) );
+            } else {
+                if( pos.distance(enemy_king) < distance)
+                    list.add( new Move(piece,pos) );
+            }
         }
             
     }

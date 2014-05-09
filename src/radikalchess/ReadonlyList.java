@@ -1,8 +1,9 @@
 package radikalchess;
 
+// Readonly List
+
 import java.util.ArrayList;
 import java.util.Iterator;
-
 
 public class ReadonlyList<T> extends ArrayList<T>
 {

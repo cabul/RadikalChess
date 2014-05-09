@@ -8,6 +8,7 @@ import radikalchess.Position.PositionList;
 public final class PrettyPrinter {
     
     private static final int ITEM_LENGTH = 2;
+    
     private static final EnumMap<Piece,String> CODE;
     
     private static final int LINE_LENGTH = 5 + Config.COLUMNS * ( 3 + ITEM_LENGTH );

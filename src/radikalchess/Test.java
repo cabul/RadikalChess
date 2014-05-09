@@ -68,15 +68,17 @@ public class Test {
         
         final Game game = new Game();
         final PrettyPrinter printer = new PrettyPrinter();
+        final MoveList moveBuffer = new MoveList();
+        final PositionList positionBuffer = new PositionList();
         
         DEFAULT = new Command(){
             @Override
             public Return execute(String[] args) throws IOException {
                 Move move = Move.fromString(args[0]);
-                MoveList moves = new MoveList();
-                Generator.genAllMoves(moves,game.board(), game.player());
+                moveBuffer.clear();
+                Generator.genAllMoves(moveBuffer,game.board(), game.player());
                 if( move != null ){
-                    if( moves.contains(move) ){
+                    if( moveBuffer.contains(move) ){
                         game.advance(move);
                     } else {
                         return errorln("No valid Move: '"+move+"'");
@@ -161,7 +163,11 @@ public class Test {
                 else{
                     try (BufferedWriter file = new BufferedWriter(new FileWriter(args[1]))) {
                         game.save(file);
+                    } catch(Exception ex)
+                    {
+                        return errorln("Saving error");
                     }
+                    println("Saving complete");
                 }
                 return Return.VOID;
             }
@@ -174,7 +180,11 @@ public class Test {
                 else{
                     try (BufferedReader file = new BufferedReader(new FileReader(args[1]))) {
                         game.load(file);
+                    } catch(Exception ex)
+                    {
+                        return errorln("Loading error");
                     }
+                    println("Loading complete");
                 }
                 return Return.PRINT;
             }
@@ -213,19 +223,19 @@ public class Test {
                 if( args.length < 2 ) return errorln("Which Position?");
                 Color color  =  Color.fromString(args[1]);
                 Position pos = Position.fromString(args[1]);
-                PositionList marks = new PositionList();
+                positionBuffer.clear();
                 if( color != null ) {
-                    Generator.genAllAttacks(marks, game.board(), color);
+                    Generator.genAllAttacks(positionBuffer, game.board(), color);
                 } 
                 else if( pos != null ) {
                     Piece piece = game.board().at(pos);
                     if( piece == null ) return errorln("No piece at "+pos);
-                    Generator.genAttacks(marks, game.board(), piece.color, pos);
+                    Generator.genAttacks(positionBuffer, game.board(), piece.color, pos);
                 }
                 else {
                     return errorln("Wrong argument: '"+args[1]+"'");
                 }
-                printer.clear().load(game.board()).highlight(marks).print(cout);
+                printer.clear().load(game.board()).highlight(positionBuffer).print(cout);
                 return Return.VOID;
             }
         });
@@ -238,28 +248,21 @@ public class Test {
             }
         });
         
-        commands.put("reset", new Command() {
-            @Override
-            public Return execute(String[] args) throws IOException {
-                game.reset();
-                return Return.PRINT;
-            }
-        });
         commands.put("moves", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                MoveList moves = new MoveList();
                 Color color = Color.fromString(args[1]);
                 Position pos = Position.fromString(args[1]);
+                moveBuffer.clear();
                 if( color != null ) {
-                    Generator.genAllMoves(moves, game.board(), color);
-                    printer.clear().load(game.board()).highlight(moves.from()).print(cout);
+                    Generator.genAllMoves(moveBuffer, game.board(), color);
+                    printer.clear().load(game.board()).highlight(moveBuffer.from()).print(cout);
                 }
                 else if( pos != null ) {
                     Piece piece = game.board().at(pos);
                     if( piece == null ) return errorln("No piece at "+pos);
-                    Generator.genMoves(moves, game.board(), piece.color, pos);
-                    printer.clear().load(game.board()).highlight(moves.to()).print(cout);
+                    Generator.genMoves(moveBuffer, game.board(), piece.color, pos);
+                    printer.clear().load(game.board()).highlight(moveBuffer.to()).print(cout);
                 }
                 return Return.VOID;
             }
