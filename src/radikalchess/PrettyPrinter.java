@@ -21,16 +21,15 @@ public final class PrettyPrinter {
     static
     {
         CODE = new EnumMap(Piece.class);
-        CODE.put(Piece.WHITE_PAWN, " P");
-        CODE.put(Piece.WHITE_BISHOP, " B");
-        CODE.put(Piece.WHITE_ROOK, " R");
-        CODE.put(Piece.WHITE_QUEEN, " Q");
-        CODE.put(Piece.WHITE_KING, " K");
-        CODE.put(Piece.BLACK_PAWN, "*P");
-        CODE.put(Piece.BLACK_BISHOP, "*B");
-        CODE.put(Piece.BLACK_ROOK, "*R");
-        CODE.put(Piece.BLACK_QUEEN, "*Q");
-        CODE.put(Piece.BLACK_KING, "*K");
+        for( Piece piece : Piece.values() )
+        {
+            String c = "";
+            if( piece.color == Color.white )
+                c += " ";
+            else c += "*";
+            c += piece.type.toString().toUpperCase().charAt(0);
+            CODE.put(piece, c);
+        }
     }
     
     private StringBuilder builder;
@@ -83,7 +82,7 @@ public final class PrettyPrinter {
     
     public PrettyPrinter load(Board board)
     {
-        for( Position pos : Position.ALL ) put( board.at(pos), pos );
+        for( Position pos : Position.values() ) put( board.at(pos), pos );
         return this;
     }
     

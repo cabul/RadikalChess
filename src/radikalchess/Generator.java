@@ -37,16 +37,9 @@ public class Generator {
             if((mask&MASK_DOWN)!=0) row--;
             if((mask&MASK_RIGHT)!=0) col++;
             if((mask&MASK_LEFT)!=0) col--;
-            Position rv = new Position(row,col);
-            return checkBounds(rv)?rv:null;
+            return Position.fromRowColumn(row, col);
         }
         
-        private boolean checkBounds(Position pos)
-        {
-            return pos.row >= 0 && pos.row < Config.ROWS
-                && pos.col >= 0 && pos.col < Config.COLUMNS;
-        }
-    
     }
     
     private static class Ray implements Iterable<Position>
@@ -77,7 +70,7 @@ public class Generator {
         bishop_rays = new HashMap();
         king_moves = new HashMap();
         
-        for( Position pos : Position.ALL )
+        for( Position pos : Position.values() )
         {
             Ray[] rays;
             int count;
@@ -133,7 +126,7 @@ public class Generator {
         switch( piece ){
             case "king":
                 bw.write("Testing king moves"); bw.newLine();
-                for( Position pos : Position.ALL )
+                for( Position pos : Position.values() )
                 {
                     bw.write(pos.toString()); bw.newLine();
                     printer.clear().highlight(king_moves.get(pos)).print(bw);
@@ -141,7 +134,7 @@ public class Generator {
                 break;
             case "bishop":
                 bw.write("Testing bishop moves"); bw.newLine();
-                for( Position pos : Position.ALL )
+                for( Position pos : Position.values() )
                 {
                     bw.write(pos.toString()); bw.newLine();
                     printer.clear();
@@ -152,7 +145,7 @@ public class Generator {
                 break;
             case "rook":
                 bw.write("Testing rook moves"); bw.newLine();
-                for( Position pos : Position.ALL )
+                for( Position pos : Position.values() )
                 {
                     bw.write(pos.toString()); bw.newLine();
                     printer.clear();
@@ -179,19 +172,19 @@ public class Generator {
     {
         if( board.at(piece) == null ) return;
         switch( board.at(piece).type ){
-            case PAWN:
+            case pawn:
                 pawnMoves( list, board, player, piece );
                 break;
-            case BISHOP:
+            case bishop:
                 bishopMoves( list, board, player, piece );
                 break;
-            case ROOK:
+            case rook:
                 rookMoves( list, board, player, piece );
                 break;
-            case QUEEN:
+            case queen:
                 queenMoves( list, board, player, piece );
                 break;
-            case KING:
+            case king:
                 kingMoves( list, board, player, piece );
                 break;
         }
@@ -207,19 +200,19 @@ public class Generator {
     {
         if( board.at(piece) == null ) return;
         switch( board.at(piece).type ){
-            case PAWN:
+            case pawn:
                 pawnAttacks( list, board, player, piece );
                 break;
-            case BISHOP:
+            case bishop:
                 bishopAttacks( list, board, player, piece );
                 break;
-            case ROOK:
+            case rook:
                 rookAttacks( list, board, player, piece );
                 break;
-            case QUEEN:
+            case queen:
                 queenAttacks( list, board, player, piece );
                 break;
-            case KING:
+            case king:
                 kingAttacks( list, board, player, piece );
                 break;
         }
@@ -229,7 +222,7 @@ public class Generator {
     private static void pawnAttacks(PositionList list, Board board, Color player, Position piece)
     {
         Position pos;
-        Direction dir = ( player == Color.WHITE)
+        Direction dir = ( player == Color.white)
                                   ? Direction.UP
                                   : Direction.DOWN;
         
@@ -251,7 +244,7 @@ public class Generator {
     
     private static void pawnMoves(MoveList list, Board board, Color player, Position piece)
     {
-        Direction dir = ( player == Color.WHITE)
+        Direction dir = ( player == Color.white)
                                   ? Direction.UP
                                   : Direction.DOWN;
         
@@ -359,7 +352,7 @@ public class Generator {
                     for( Position aux : positionBuffer ) {
                         final Piece p = board.at(aux);
                         if( p != null) {
-                            if( p.type == Piece.Type.KING || p.color != player)
+                            if( p.type == Piece.Type.king || p.color != player)
                                 list.add(new Move(piece,pos));
                             else break;
                         }

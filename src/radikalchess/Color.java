@@ -4,24 +4,18 @@ package radikalchess;
 
 public enum Color 
 { 
-    WHITE,
-    BLACK;
+    white,
+    black;
     
     public Color enemy()
     {
-        return (this == WHITE)?BLACK:WHITE;
-    }
-    
-    @Override
-    public String toString()
-    {
-        return super.toString().toLowerCase();
+        return (this == white)?black:white;
     }
     
     public static Color fromString(String color)
     {
         try{ 
-            return Color.valueOf(color.toUpperCase());
+            return Color.valueOf(color.toLowerCase());
         }catch(IllegalArgumentException ex){
             return null;
         }

@@ -1,5 +1,6 @@
 package radikalchess;
 
+import java.util.Objects;
 import radikalchess.Position.PositionList;
 
 public class Move
@@ -41,11 +42,6 @@ public class Move
     }
 
     @Override
-    public int hashCode() {
-        return to.hashCode() + from.hashCode() * Config.ALL_SQUARES;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -54,9 +50,17 @@ public class Move
             return false;
         }
         final Move other = (Move) obj;
-        return from.equals(other.from)
-            && to.equals(other.to);
+        return from == other.from
+            && to == other.to;
         
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + Objects.hashCode(this.from);
+        hash = 67 * hash + Objects.hashCode(this.to);
+        return hash;
     }
     
     public static Move fromString(String str)
@@ -74,7 +78,7 @@ public class Move
     
     public boolean isPromotion()
     {
-        return to.atBottom() || to.atTop();
+        return (to.row == 0) || (to.row == Config.ROWS - 1 );
     }
     
     

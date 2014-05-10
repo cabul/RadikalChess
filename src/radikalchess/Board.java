@@ -1,12 +1,13 @@
 package radikalchess;
 
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Iterator;
 import radikalchess.Position.PositionList;
 
-public class Board implements Iterable<Piece>
+public class Board implements Iterable<Position>
 {
-    private Piece[] map;
+    private EnumMap<Position,Piece> map;
     
     private EnumMap<Color,Info> details;
     
@@ -16,23 +17,23 @@ public class Board implements Iterable<Piece>
     {
         Board b = new Board();
         
-        b.add(Piece.WHITE_PAWN,   new Position(1,0) );
-        b.add(Piece.WHITE_PAWN,   new Position(1,1) );
-        b.add(Piece.WHITE_PAWN,   new Position(1,2) );
-        b.add(Piece.WHITE_PAWN,   new Position(1,3) );
-        b.add(Piece.WHITE_ROOK,   new Position(0,0) );
-        b.add(Piece.WHITE_BISHOP, new Position(0,1) );
-        b.add(Piece.WHITE_QUEEN,  new Position(0,2) );
-        b.add(Piece.WHITE_KING,   new Position(0,3) );
+        b.add( Piece.white_pawn, Position.a2 );
+        b.add( Piece.white_pawn, Position.b2  );
+        b.add( Piece.white_pawn, Position.c2 );
+        b.add( Piece.white_pawn, Position.d2 );
+        b.add( Piece.white_rook, Position.a1 );
+        b.add( Piece.white_bishop, Position.b1 );
+        b.add( Piece.white_queen, Position.c1 );
+        b.add( Piece.white_king, Position.d1 );
         
-        b.add(Piece.BLACK_PAWN,   new Position(4,0) );
-        b.add(Piece.BLACK_PAWN,   new Position(4,1) );
-        b.add(Piece.BLACK_PAWN,   new Position(4,2) );
-        b.add(Piece.BLACK_PAWN,   new Position(4,3) );
-        b.add(Piece.BLACK_ROOK,   new Position(5,3) );
-        b.add(Piece.BLACK_BISHOP, new Position(5,2) );
-        b.add(Piece.BLACK_QUEEN,  new Position(5,1) );
-        b.add(Piece.BLACK_KING,   new Position(5,0) );
+        b.add( Piece.black_pawn, Position.a5 );
+        b.add( Piece.black_pawn, Position.b5 );
+        b.add( Piece.black_pawn, Position.c5 );
+        b.add( Piece.black_pawn, Position.d5 );
+        b.add( Piece.black_king, Position.a6 );
+        b.add( Piece.black_queen, Position.b6 );
+        b.add( Piece.black_bishop, Position.c6 );
+        b.add( Piece.black_rook, Position.d6 );
         
         b.turn = 1;
         
@@ -40,7 +41,7 @@ public class Board implements Iterable<Piece>
     }
     
     public Board() {
-        map = new Piece[Config.ALL_SQUARES];
+        map = new EnumMap( Position.class );
         details = new EnumMap( Color.class );
         clear();
     }
@@ -49,7 +50,7 @@ public class Board implements Iterable<Piece>
     public Board clone()
     {
         Board b = new Board();
-        System.arraycopy(map, 0, b.map, 0, Config.ALL_SQUARES);
+        b.map = map.clone();
         b.details = details.clone();
         b.turn = turn;
         return b;
@@ -57,17 +58,15 @@ public class Board implements Iterable<Piece>
     
     private void clear()
     {
-        for (int i = 0; i < map.length; i++) {
-            map[i] = null;
-        }
+        map.clear();
         details.clear();
-        details.put(Color.WHITE,new Info());
-        details.put(Color.BLACK,new Info());
+        details.put(Color.white,new Info());
+        details.put(Color.black,new Info());
     }
     
     public Color player()
     {
-        return ( turn % 2 == 1 )?Color.WHITE:Color.BLACK;
+        return ( turn % 2 == 1 )?Color.white:Color.black;
     }
     
     public int turn()
@@ -77,7 +76,7 @@ public class Board implements Iterable<Piece>
     
     public Piece at(Position pos)
     {
-        return map[pos.hashCode()];
+        return map.get(pos);
     }
     
     public Board apply(Move move)
@@ -88,7 +87,7 @@ public class Board implements Iterable<Piece>
         if( cap != null )
             delete( cap, move.to );
         delete( mov, move.from );
-        if( move.isPromotion() && mov.type == Piece.Type.PAWN ) 
+        if( move.isPromotion() && mov.type == Piece.Type.pawn ) 
             add( mov.promote(), move.to );
         else add( mov, move.to );
         
@@ -104,49 +103,31 @@ public class Board implements Iterable<Piece>
     
     private void add(Piece piece, Position pos)
     {
-        map[pos.hashCode()] = piece;
+        map.put(pos,piece);
         Info info = details.get(piece.color);
         info.value += piece.value();
         info.pieces.add(pos);
-        System.out.println("Debug: place "+piece+" at "+pos);
-        if( piece.type == Piece.Type.KING ) info.king = pos;
+        if( piece.type == Piece.Type.king ) info.king = pos;
     }
     
     private void delete(Piece piece, Position pos)
     {
-        map[pos.hashCode()] = null;
+        map.remove(pos);
         Info info = details.get(piece.color);
         info.value -= piece.value();
         info.pieces.remove(pos);
-        System.out.println("Debug: remove "+piece+" from "+pos);
-        if( piece.type == Piece.Type.KING ) info.king = null;
+        if( piece.type == Piece.Type.king ) info.king = null;
     }
     
     @Override
-    public Iterator<Piece> iterator() {
-        return new Iterator<Piece>() {
-            private int head = 0;
-            @Override
-            public boolean hasNext() {
-                return ( head < map.length );
-            }
-
-            @Override
-            public Piece next() {
-                return map[ head++ ];
-            }
-
-            @Override
-            public void remove() {
-            }
-
-        };
+    public Iterator<Position> iterator() {
+        return map.keySet().iterator();
     }
 
     public String save()
     {
         String str = "";
-        for( Position pos : Position.ALL )
+        for( Position pos : Position.values() )
         {
             if( at(pos) != null )
             {
@@ -172,13 +153,12 @@ public class Board implements Iterable<Piece>
     {
         private Position king;
         private PositionList pieces;
-        private PositionList attacks;
+        private EnumSet<Position> ps;
         private int value;
         
         private Info()
         {
             pieces = new PositionList();
-            attacks = new PositionList();
             value = 0;
         }
         
@@ -207,7 +187,7 @@ public class Board implements Iterable<Piece>
         {
             Info info = new Info();
             info.pieces = (PositionList) pieces.clone();
-            info.king = king.clone();
+            info.king = king;
             info.value = value;
             return info;
         }

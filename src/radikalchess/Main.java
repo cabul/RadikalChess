@@ -11,7 +11,7 @@ import java.util.HashMap;
 import radikalchess.Move.MoveList;
 import radikalchess.Position.PositionList;
 
-public class Test {
+public class Main {
     
     private static BufferedWriter cout;
     private static BufferedWriter cerr;

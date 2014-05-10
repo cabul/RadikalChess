@@ -3,19 +3,19 @@ package radikalchess;
 public enum Piece
 {
     
-    WHITE_PAWN   ( Type.PAWN, Color.WHITE ),
-    WHITE_BISHOP ( Type.BISHOP, Color.WHITE ),
-    WHITE_ROOK   ( Type.ROOK, Color.WHITE ),
-    WHITE_QUEEN  ( Type.QUEEN, Color.WHITE ),
-    WHITE_KING   ( Type.KING, Color.WHITE ),
-    BLACK_PAWN   ( Type.PAWN, Color.BLACK ),
-    BLACK_BISHOP ( Type.BISHOP, Color.BLACK ),
-    BLACK_ROOK   ( Type.ROOK, Color.BLACK ),
-    BLACK_QUEEN  ( Type.QUEEN, Color.BLACK ),
-    BLACK_KING   ( Type.KING, Color.BLACK );
+    white_pawn   ( Type.pawn, Color.white ),
+    white_bishop ( Type.bishop, Color.white ),
+    white_rook   ( Type.rook, Color.white ),
+    white_queen  ( Type.queen, Color.white ),
+    white_king   ( Type.king, Color.white ),
+    black_pawn   ( Type.pawn, Color.black ),
+    black_bishop ( Type.bishop, Color.black ),
+    black_rook   ( Type.rook, Color.black ),
+    black_queen  ( Type.queen, Color.black ),
+    black_king   ( Type.king, Color.black );
     
     public static enum Type {
-        PAWN, BISHOP, ROOK, QUEEN, KING;
+        pawn, bishop, rook, queen, king;
         @Override
         public String toString()
         {
@@ -26,7 +26,7 @@ public enum Piece
     public final Type type;
     public final Color color;
     
-    Piece(Type type, Color color)
+    private Piece(Type type, Color color)
     {
         this.type = type;
         this.color = color;
@@ -42,7 +42,7 @@ public enum Piece
         try{
             String[] words = str.split(" ");
             if( words.length < 2 ) return null;
-            String piece = words[0].toUpperCase()+"_"+words[1].toUpperCase();
+            String piece = words[0].toLowerCase()+"_"+words[1].toLowerCase();
             return Piece.valueOf(piece);
         } catch(Exception ex)
         {
@@ -54,15 +54,15 @@ public enum Piece
     {
         switch( type )
         {
-            case PAWN:
+            case pawn:
                 return 100;
-            case BISHOP:
+            case bishop:
                 return 200;
-            case ROOK:
+            case rook:
                 return 300;
-            case QUEEN:
+            case queen:
                 return 500;
-            case KING:
+            case king:
                 return 20000;
             default:
                 return 0;
@@ -71,7 +71,7 @@ public enum Piece
     
     public Piece promote()
     {
-        return (color == Color.WHITE)?WHITE_QUEEN:BLACK_QUEEN;
+        return (color == Color.white)?white_queen:black_queen;
     }
     
 }
