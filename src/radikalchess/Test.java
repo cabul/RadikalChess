@@ -251,6 +251,28 @@ public class Test {
         commands.put("moves", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
+                if( args.length < 2 ) return errorln("No arguments");
+                Color color = Color.fromString(args[1]);
+                Position pos = Position.fromString(args[1]);
+                moveBuffer.clear();
+                if( color != null ) {
+                    Generator.genAllMoves(moveBuffer, game.board(), color);
+                    printer.clear().load(game.board()).highlight(moveBuffer.to()).print(cout);
+                }
+                else if( pos != null ) {
+                    Piece piece = game.board().at(pos);
+                    if( piece == null ) return errorln("No piece at "+pos);
+                    Generator.genMoves(moveBuffer, game.board(), piece.color, pos);
+                    printer.clear().load(game.board()).highlight(moveBuffer.to()).print(cout);
+                }
+                return Return.VOID;
+            }
+        });
+        
+        commands.put("hint", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                if( args.length < 2 ) return errorln("No arguments");
                 Color color = Color.fromString(args[1]);
                 Position pos = Position.fromString(args[1]);
                 moveBuffer.clear();
@@ -262,7 +284,7 @@ public class Test {
                     Piece piece = game.board().at(pos);
                     if( piece == null ) return errorln("No piece at "+pos);
                     Generator.genMoves(moveBuffer, game.board(), piece.color, pos);
-                    printer.clear().load(game.board()).highlight(moveBuffer.to()).print(cout);
+                    printer.clear().load(game.board()).highlight(moveBuffer.from()).print(cout);
                 }
                 return Return.VOID;
             }

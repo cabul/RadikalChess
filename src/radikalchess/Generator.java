@@ -351,12 +351,19 @@ public class Generator {
         for( Ray ray : bishop_rays.get(piece) )
         for( Position pos : ray) {
             if( board.at(pos) == null ){
-                if( pos.distance(enemy_king) > distance) {
-                    rookAttacks(positionBuffer,board,player,pos);
-                    if( positionBuffer.contains(enemy_king) ) 
-                        list.add(new Move(piece,pos));
-                } else {
+                if( pos.distance(enemy_king) < distance) {
                     list.add(new Move(piece,pos));
+                } else {
+                    positionBuffer.clear();
+                    rookAttacks(positionBuffer,board,player,pos);
+                    for( Position aux : positionBuffer ) {
+                        final Piece p = board.at(aux);
+                        if( p != null) {
+                            if( p.type == Piece.Type.KING || p.color != player)
+                                list.add(new Move(piece,pos));
+                            else break;
+                        }
+                    } 
                 }
             } else {
                 if( board.at(pos).color != player ) 
@@ -368,6 +375,7 @@ public class Generator {
         for( Position pos : ray) {
             if( board.at(pos) == null ){
                 if( pos.distance(enemy_king) > distance) {
+                    positionBuffer.clear();
                     bishopAttacks(positionBuffer,board,player,pos);
                     if( positionBuffer.contains(enemy_king) ) 
                         list.add(new Move(piece,pos));

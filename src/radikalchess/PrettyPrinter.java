@@ -83,7 +83,7 @@ public final class PrettyPrinter {
     
     public PrettyPrinter load(Board board)
     {
-        for( Position pos : board ) put( board.at(pos), pos );
+        for( Position pos : Position.ALL ) put( board.at(pos), pos );
         return this;
     }
     

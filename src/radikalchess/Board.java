@@ -1,13 +1,12 @@
 package radikalchess;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Iterator;
 import radikalchess.Position.PositionList;
 
-public class Board implements Iterable<Position>
+public class Board implements Iterable<Piece>
 {
-    private HashMap<Position,Piece> map;
+    private Piece[] map;
     
     private EnumMap<Color,Info> details;
     
@@ -41,7 +40,7 @@ public class Board implements Iterable<Position>
     }
     
     public Board() {
-        map = new HashMap<>(Config.LIST_SIZE*2);
+        map = new Piece[Config.ALL_SQUARES];
         details = new EnumMap( Color.class );
         clear();
     }
@@ -50,7 +49,7 @@ public class Board implements Iterable<Position>
     public Board clone()
     {
         Board b = new Board();
-        b.map = (HashMap)map.clone();
+        System.arraycopy(map, 0, b.map, 0, Config.ALL_SQUARES);
         b.details = details.clone();
         b.turn = turn;
         return b;
@@ -58,7 +57,9 @@ public class Board implements Iterable<Position>
     
     private void clear()
     {
-        map.clear();
+        for (int i = 0; i < map.length; i++) {
+            map[i] = null;
+        }
         details.clear();
         details.put(Color.WHITE,new Info());
         details.put(Color.BLACK,new Info());
@@ -76,7 +77,7 @@ public class Board implements Iterable<Position>
     
     public Piece at(Position pos)
     {
-        return map.get(pos);
+        return map[pos.hashCode()];
     }
     
     public Board apply(Move move)
@@ -103,34 +104,55 @@ public class Board implements Iterable<Position>
     
     private void add(Piece piece, Position pos)
     {
-        map.put(pos, piece);
+        map[pos.hashCode()] = piece;
         Info info = details.get(piece.color);
         info.value += piece.value();
         info.pieces.add(pos);
+        System.out.println("Debug: place "+piece+" at "+pos);
         if( piece.type == Piece.Type.KING ) info.king = pos;
     }
     
     private void delete(Piece piece, Position pos)
     {
-        map.remove(pos);
+        map[pos.hashCode()] = null;
         Info info = details.get(piece.color);
         info.value -= piece.value();
         info.pieces.remove(pos);
+        System.out.println("Debug: remove "+piece+" from "+pos);
         if( piece.type == Piece.Type.KING ) info.king = null;
     }
     
     @Override
-    public Iterator<Position> iterator() {
-        return map.keySet().iterator();
+    public Iterator<Piece> iterator() {
+        return new Iterator<Piece>() {
+            private int head = 0;
+            @Override
+            public boolean hasNext() {
+                return ( head < map.length );
+            }
+
+            @Override
+            public Piece next() {
+                return map[ head++ ];
+            }
+
+            @Override
+            public void remove() {
+            }
+
+        };
     }
 
     public String save()
     {
         String str = "";
-        for( Position pos : this )
+        for( Position pos : Position.ALL )
         {
-            str += at(pos)
-             +" "+ pos +"\n";
+            if( at(pos) != null )
+            {
+                str += at(pos)
+                +" "+ pos +"\n";
+            }
         }
         return str.substring(0, str.length()-1);
     }
@@ -165,19 +187,9 @@ public class Board implements Iterable<Position>
             return pieces.ro;
         }
         
-        public Iterable<Position> attacks()
-        {
-            return attacks.ro;
-        }
-        
-        public int numPieces()
+        public int count()
         {
             return pieces.size();
-        }
-        
-        public int numAttacks()
-        {
-            return attacks.size();
         }
         
         public int value()
