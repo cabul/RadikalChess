@@ -1,0 +1,6 @@
+#!/bin/bash
+
+root=".."
+
+java -jar $root/build/jar/Radikalchess.jar
+

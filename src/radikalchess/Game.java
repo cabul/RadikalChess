@@ -3,11 +3,11 @@ package radikalchess;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import radikalchess.Move.MoveList;
+import java.util.ArrayList;
 
 public final class Game {
     
-    private MoveList history;
+    private ArrayList<Move> history;
     private Board init;
     private Board current;
     private int head;
@@ -15,7 +15,7 @@ public final class Game {
     public Game()
     {
         init = Board.init();
-        history = new MoveList();
+        history = new ArrayList();
         reset();
     }
     
@@ -64,8 +64,9 @@ public final class Game {
         current = init.clone();
         for( int i = 0; i < head; i++ )
         {
-            current.apply(history.get(i));
+            current.make(history.get(i));
         }
+        current.commit();
     }
     
     public void save(BufferedWriter bw) throws IOException

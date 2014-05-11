@@ -17,13 +17,14 @@ public class Config {
     public static final int COLUMNS = 4;
     
     public static final int ALL_SQUARES = ROWS * COLUMNS;
-    
-    public static final int LIST_SIZE = 8;
  
+    public static final int SEARCH_DEPTH = 20;
+    public static final int SEARCH_TIMEOUT = 10;
     
     public static void main(String[] args) throws IOException {
         
-        generatePosition("Position");
+        //generatePosition("Position");
+        System.out.println("Nothing to config");
         
     }
 

@@ -1,6 +1,8 @@
 // Generated on Sat May 10 13:58:57 WEST 2014
 package radikalchess;
 
+import java.util.ArrayList;
+
 public enum Position {
 
     a1(0, 0),
@@ -28,8 +30,6 @@ public enum Position {
     c6(5, 2),
     d6(5, 3);
 
-    public static class PositionList extends ReadonlyList<Position> {
-    };
     public final int row, col;
 
     private Position(int row, int col) {

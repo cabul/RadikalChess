@@ -3,7 +3,7 @@ package radikalchess;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.EnumMap;
-import radikalchess.Position.PositionList;
+import java.util.List;
 
 public final class PrettyPrinter {
     
@@ -74,9 +74,25 @@ public final class PrettyPrinter {
         else put( CODE.get( piece ), pos);
     }
     
-    public PrettyPrinter highlight(PositionList mask)
+    private String get(Position pos)
+    {
+        int offset = offset(pos);
+        return builder.substring( offset, offset+ITEM_LENGTH );
+    }
+    
+    public PrettyPrinter positions(List<Position> mask)
     {
         for( Position pos : mask ) put( MARK, pos );
+        return this;
+    }
+    
+    public PrettyPrinter moves(List<Move> mask)
+    {
+        for( Move move : mask )
+        {
+            put( MARK, move.to );
+            put( new StringBuilder(get(move.from)).reverse().toString(), move.from );
+        }
         return this;
     }
     
@@ -101,6 +117,7 @@ public final class PrettyPrinter {
     
     private static void flush(StringBuilder sb)
     {
+        sb.delete(0, CHAR_COUNT);
         for( int i = 0; i < CHAR_COUNT; i++ )
             sb.append(" ");
         for( int i = LINE_LENGTH-1; i < CHAR_COUNT; i+=LINE_LENGTH )
@@ -153,6 +170,6 @@ public final class PrettyPrinter {
         }
         
     }
-    
+
     
 }

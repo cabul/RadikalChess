@@ -7,9 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
-import radikalchess.Move.MoveList;
-import radikalchess.Position.PositionList;
+import java.util.List;
 
 public class Main {
     
@@ -68,17 +68,26 @@ public class Main {
         
         final Game game = new Game();
         final PrettyPrinter printer = new PrettyPrinter();
-        final MoveList moveBuffer = new MoveList();
-        final PositionList positionBuffer = new PositionList();
+        final List<Move> moveBuffer = new ArrayList();
+        final List<Position> positionBuffer = new ArrayList();
+        
+        final Heuristic hValue = new Heuristic(){
+
+            @Override
+            public int eval(Board board) {
+                return board.info(board.player()).value();
+            }
+            
+        };
+        
+        final AISearch ai = new AISearch(hValue);
         
         DEFAULT = new Command(){
             @Override
             public Return execute(String[] args) throws IOException {
                 Move move = Move.fromString(args[0]);
-                moveBuffer.clear();
-                Generator.genAllMoves(moveBuffer,game.board(), game.player());
                 if( move != null ){
-                    if( moveBuffer.contains(move) ){
+                    if( game.board().valid(move) ){
                         game.advance(move);
                     } else {
                         return errorln("No valid Move: '"+move+"'");
@@ -193,12 +202,12 @@ public class Main {
         commands.put("mark", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                PositionList marks = new PositionList();
+                positionBuffer.clear();
                 for( int i = 1; i < args.length; i++ )
                 {
-                    marks.add( Position.fromString(args[i]) );
+                    positionBuffer.add( Position.fromString(args[i]) );
                 }
-                printer.clear().load(game.board()).highlight(marks).print(cout);
+                printer.clear().load(game.board()).positions(positionBuffer).print(cout);
                 return Return.VOID;
             }
         });
@@ -209,10 +218,10 @@ public class Main {
                 if( args.length < 2 ) return errorln("Which Color?");
                 Color color = Color.fromString(args[1]);
                 if( color == null ) return errorln("'" + args[1] + "' is not a Color");
-                PositionList marks = new PositionList();
+                positionBuffer.clear();
                 for( Position pos : game.board().info(color).pieces())
-                    marks.add(pos);
-                printer.clear().load(game.board()).highlight(marks).print(cout);
+                    positionBuffer.add(pos);
+                printer.clear().load(game.board()).positions(positionBuffer).print(cout);
                 return Return.VOID;
             }
         });
@@ -235,7 +244,7 @@ public class Main {
                 else {
                     return errorln("Wrong argument: '"+args[1]+"'");
                 }
-                printer.clear().load(game.board()).highlight(positionBuffer).print(cout);
+                printer.clear().load(game.board()).positions(positionBuffer).print(cout);
                 return Return.VOID;
             }
         });
@@ -251,41 +260,33 @@ public class Main {
         commands.put("moves", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                if( args.length < 2 ) return errorln("No arguments");
-                Color color = Color.fromString(args[1]);
-                Position pos = Position.fromString(args[1]);
+                Color color;
+                Position pos = null;
+                if( args.length < 2 ){
+                    color = game.board().player();
+                } else {
+                    color = Color.fromString(args[1]);
+                    pos = Position.fromString(args[1]);
+                }
                 moveBuffer.clear();
                 if( color != null ) {
                     Generator.genAllMoves(moveBuffer, game.board(), color);
-                    printer.clear().load(game.board()).highlight(moveBuffer.to()).print(cout);
+                    printer.clear().load(game.board()).moves(moveBuffer).print(cout);
                 }
                 else if( pos != null ) {
                     Piece piece = game.board().at(pos);
                     if( piece == null ) return errorln("No piece at "+pos);
                     Generator.genMoves(moveBuffer, game.board(), piece.color, pos);
-                    printer.clear().load(game.board()).highlight(moveBuffer.to()).print(cout);
+                    printer.clear().load(game.board()).moves(moveBuffer).print(cout);
                 }
                 return Return.VOID;
             }
         });
         
-        commands.put("hint", new Command() {
+        commands.put("decide", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                if( args.length < 2 ) return errorln("No arguments");
-                Color color = Color.fromString(args[1]);
-                Position pos = Position.fromString(args[1]);
-                moveBuffer.clear();
-                if( color != null ) {
-                    Generator.genAllMoves(moveBuffer, game.board(), color);
-                    printer.clear().load(game.board()).highlight(moveBuffer.from()).print(cout);
-                }
-                else if( pos != null ) {
-                    Piece piece = game.board().at(pos);
-                    if( piece == null ) return errorln("No piece at "+pos);
-                    Generator.genMoves(moveBuffer, game.board(), piece.color, pos);
-                    printer.clear().load(game.board()).highlight(moveBuffer.from()).print(cout);
-                }
+                Move move = ai.decide(game.board());
                 return Return.VOID;
             }
         });

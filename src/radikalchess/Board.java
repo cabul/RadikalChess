@@ -1,9 +1,12 @@
 package radikalchess;
 
+import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
-import radikalchess.Position.PositionList;
+import java.util.List;
+import java.util.Stack;
 
 public class Board implements Iterable<Position>
 {
@@ -11,11 +14,20 @@ public class Board implements Iterable<Position>
     
     private EnumMap<Color,Info> details;
     
+    private List<Move> moves;
+    
     private int turn;
+    
+    private Stack<Move> history;
+    private Stack<Piece> captures;
+    
+    private boolean dirty;
     
     public static Board init()
     {
         Board b = new Board();
+        
+        b.clear();
         
         b.add( Piece.white_pawn, Position.a2 );
         b.add( Piece.white_pawn, Position.b2  );
@@ -43,7 +55,10 @@ public class Board implements Iterable<Position>
     public Board() {
         map = new EnumMap( Position.class );
         details = new EnumMap( Color.class );
-        clear();
+        moves = new ArrayList();
+        history = new Stack();
+        captures = new Stack();
+        dirty = true;
     }
     
     @Override
@@ -58,10 +73,13 @@ public class Board implements Iterable<Position>
     
     private void clear()
     {
+        turn = 1;
         map.clear();
         details.clear();
         details.put(Color.white,new Info());
         details.put(Color.black,new Info());
+        history.clear();
+        captures.clear();
     }
     
     public Color player()
@@ -73,29 +91,80 @@ public class Board implements Iterable<Position>
     {
         return turn;
     }
+
+    public List<Move> moves()
+    {
+        if( dirty )
+        {
+            moves.clear();
+            Generator.genAllMoves(moves, this, player());
+            dirty = false;
+        }
+        return moves;
+    }
+    
+    public boolean valid(Move move)
+    {
+        moves();
+        return moves.contains(move);
+    }
     
     public Piece at(Position pos)
     {
         return map.get(pos);
     }
     
-    public Board apply(Move move)
+    public void commit()
+    {
+        history.clear();
+        captures.clear();
+    }
+    
+    public boolean make(Move move)
     {
         Piece mov = at(move.from);
         Piece cap = at(move.to);
-        if( mov == null ) return null;
+        if( mov == null ) return false;
         if( cap != null )
             delete( cap, move.to );
         delete( mov, move.from );
         if( move.isPromotion() && mov.type == Piece.Type.pawn ) 
-            add( mov.promote(), move.to );
+            add( mov.toQueen(), move.to );
         else add( mov, move.to );
         
         turn++;
         
-        return this;
+        history.push(move);
+        captures.push(cap);
+        
+        dirty = true;
+        
+        return true;
     }
     
+    public boolean unmake()
+    {
+        try {
+            Move move = history.pop();
+            Piece cap = captures.pop();
+        
+            Piece mov = at(move.to);
+            if( mov == null ) return false;
+            delete( mov, move.to );
+            if( move.isPromotion() && mov.type == Piece.Type.queen )
+                add( mov.toPawn(), move.from );
+            else add( mov, move.from );
+            if( cap != null )
+                add( cap, move.to );
+        
+            turn--;
+        
+            dirty = true;
+            
+            return true;
+        } catch( EmptyStackException ex ){ return false; }
+    }
+            
     public Info info(Color color)
     {
         return details.get(color);
@@ -146,25 +215,24 @@ public class Board implements Iterable<Position>
         {
             String[] words = lines[i].split(" ");
             add( Piece.fromString(lines[i]), Position.fromString(words[2]));
-        } 
+        }
     }
     
     public static class Info
     {
         private Position king;
-        private PositionList pieces;
-        private EnumSet<Position> ps;
+        private EnumSet<Position> pieces;
         private int value;
         
         private Info()
         {
-            pieces = new PositionList();
+            pieces = EnumSet.noneOf(Position.class);
             value = 0;
         }
         
         public Iterable<Position> pieces()
         {
-            return pieces.ro;
+            return pieces;
         }
         
         public int count()
@@ -186,7 +254,7 @@ public class Board implements Iterable<Position>
         public Info clone()
         {
             Info info = new Info();
-            info.pieces = (PositionList) pieces.clone();
+            info.pieces = pieces.clone();
             info.king = king;
             info.value = value;
             return info;

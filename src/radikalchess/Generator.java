@@ -2,10 +2,10 @@ package radikalchess;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import radikalchess.Move.MoveList;
-import radikalchess.Position.PositionList;
+import java.util.List;
 
 public class Generator {
 
@@ -14,7 +14,7 @@ public class Generator {
     private static final int MASK_LEFT = 1 << 3;
     private static final int MASK_RIGHT = 1 << 4;
 
-    private static final PositionList positionBuffer = new PositionList();
+    private static final ArrayList<Position> positionBuffer = new ArrayList();
     
     private enum Direction { 
         UP (MASK_UP),
@@ -44,25 +44,25 @@ public class Generator {
     
     private static class Ray implements Iterable<Position>
     {
-        private PositionList list;
+        private List<Position> list;
         private final int length;
         private Ray(Position init, Direction dir)
         {
-            list = new PositionList();
+            list = new ArrayList<Position>();
             Position pos = init;
             while( ( pos = dir.move(pos) ) != null ) list.add(pos);
             length = list.size();
         }
         @Override
         public Iterator iterator() {
-            return list.ro.iterator();
+            return list.iterator();
         }
         
     }
     
     private static final HashMap<Position,Ray[]> rook_rays;
     private static final HashMap<Position,Ray[]> bishop_rays;
-    private static final HashMap<Position,PositionList> king_moves;
+    private static final HashMap<Position,List<Position>> king_moves;
     
     static
     {
@@ -110,7 +110,7 @@ public class Generator {
             bishop_rays.put(pos,rays);
             
             
-            PositionList km = new PositionList();
+            List<Position> km = new ArrayList<Position>();
             Position to;
             for( Direction dir : Direction.values() )
                 if( (to = dir.move(pos)) != null ) km.add(to);
@@ -129,7 +129,7 @@ public class Generator {
                 for( Position pos : Position.values() )
                 {
                     bw.write(pos.toString()); bw.newLine();
-                    printer.clear().highlight(king_moves.get(pos)).print(bw);
+                    printer.clear().positions(king_moves.get(pos)).print(bw);
                 }
                 break;
             case "bishop":
@@ -139,7 +139,7 @@ public class Generator {
                     bw.write(pos.toString()); bw.newLine();
                     printer.clear();
                     for( Ray ray : bishop_rays.get(pos) )
-                        printer.highlight(ray.list);
+                        printer.positions(ray.list);
                     printer.print(bw);
                 }
                 break;
@@ -150,7 +150,7 @@ public class Generator {
                     bw.write(pos.toString()); bw.newLine();
                     printer.clear();
                     for( Ray ray : rook_rays.get(pos) )
-                        printer.highlight(ray.list);
+                        printer.positions(ray.list);
                     printer.print(bw);
                 }
                 break;
@@ -160,15 +160,16 @@ public class Generator {
         
     }
     
-    public static void genAllMoves(MoveList list, Board board, Color player)
+    public static void genAllMoves(List<Move> list, Board board, Color player)
     {
+        if( board.info(player).king() == null ) return;
         for( Position piece : board.info(player).pieces() )
         {
             genMoves(list,board,player,piece);
         }
     }
     
-    public static void genMoves(MoveList list, Board board, Color player, Position piece)
+    public static void genMoves(List<Move> list, Board board, Color player, Position piece)
     {
         if( board.at(piece) == null ) return;
         switch( board.at(piece).type ){
@@ -190,13 +191,13 @@ public class Generator {
         }
     }
     
-    public static void genAllAttacks(PositionList list,Board board, Color player)
+    public static void genAllAttacks(List<Position> list,Board board, Color player)
     {
         for( Position piece : board.info(player).pieces() )
             genAttacks(list,board,player,piece);   
     }
     
-    public static void genAttacks(PositionList list, Board board,Color player,Position piece)
+    public static void genAttacks(List<Position> list, Board board,Color player,Position piece)
     {
         if( board.at(piece) == null ) return;
         switch( board.at(piece).type ){
@@ -219,7 +220,7 @@ public class Generator {
         
     }
     
-    private static void pawnAttacks(PositionList list, Board board, Color player, Position piece)
+    private static void pawnAttacks(List<Position> list, Board board, Color player, Position piece)
     {
         Position pos;
         Direction dir = ( player == Color.white)
@@ -242,7 +243,7 @@ public class Generator {
         }   
     }
     
-    private static void pawnMoves(MoveList list, Board board, Color player, Position piece)
+    private static void pawnMoves(List<Move> list, Board board, Color player, Position piece)
     {
         Direction dir = ( player == Color.white)
                                   ? Direction.UP
@@ -265,7 +266,7 @@ public class Generator {
         
     }
     
-    private static void bishopAttacks(PositionList list, Board board, Color player, Position piece)
+    private static void bishopAttacks(List<Position> list, Board board, Color player, Position piece)
     {
         for( Ray ray : bishop_rays.get(piece) )
         for( Position pos : ray)
@@ -280,7 +281,7 @@ public class Generator {
             
     }
     
-    private static void bishopMoves(MoveList list, Board board, Color player, Position piece)
+    private static void bishopMoves(List<Move> list, Board board, Color player, Position piece)
     {
         final Position enemy_king = board.info(player.enemy()).king();
         final int distance = piece.distance(enemy_king);
@@ -298,7 +299,7 @@ public class Generator {
         }
     }
     
-    private static void rookAttacks(PositionList list, Board board, Color player, Position piece)
+    private static void rookAttacks(List<Position> list, Board board, Color player, Position piece)
     {
         for( Ray ray : rook_rays.get(piece) )
         for( Position pos : ray)
@@ -313,7 +314,7 @@ public class Generator {
             
     }
     
-    private static void rookMoves(MoveList list, Board board, Color player, Position piece)
+    private static void rookMoves(List<Move> list, Board board, Color player, Position piece)
     {
         final Position enemy_king = board.info(player.enemy()).king();
         final int distance = piece.distance(enemy_king);
@@ -331,13 +332,13 @@ public class Generator {
         }
     }
     
-    private static void queenAttacks(PositionList list, Board board, Color player, Position piece)
+    private static void queenAttacks(List<Position> list, Board board, Color player, Position piece)
     {
         bishopAttacks( list, board, player, piece );
         rookAttacks( list, board, player, piece );
     }
     
-    private static void queenMoves(MoveList list, Board board, Color player, Position piece)
+    private static void queenMoves(List<Move> list, Board board, Color player, Position piece)
     {
         final Position enemy_king = board.info(player.enemy()).king();
         final int distance = piece.distance(enemy_king);
@@ -383,7 +384,7 @@ public class Generator {
         }
     }
     
-    private static void kingAttacks(PositionList list, Board board, Color player, Position piece)
+    private static void kingAttacks(List<Position> list, Board board, Color player, Position piece)
     {
         for( Position pos : king_moves.get(piece) )
             if( board.at(pos) != null )
@@ -394,7 +395,7 @@ public class Generator {
             
     }
     
-    private static void kingMoves(MoveList list, Board board, Color player, Position piece)
+    private static void kingMoves(List<Move> list, Board board, Color player, Position piece)
     {
         final Position enemy_king = board.info(player.enemy()).king();
         final int distance = piece.distance(enemy_king);

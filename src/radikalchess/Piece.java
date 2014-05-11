@@ -69,9 +69,14 @@ public enum Piece
         }
     }
     
-    public Piece promote()
+    public Piece toQueen()
     {
         return (color == Color.white)?white_queen:black_queen;
+    }
+    
+    public Piece toPawn()
+    {
+        return (color == Color.white)?white_pawn:black_pawn;
     }
     
 }

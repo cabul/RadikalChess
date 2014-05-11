@@ -1,31 +1,11 @@
 package radikalchess;
 
+import java.util.ArrayList;
 import java.util.Objects;
-import radikalchess.Position.PositionList;
 
 public class Move
 {
-    public static class MoveList extends ReadonlyList<Move>
-    {
-        public PositionList to()
-        {
-            PositionList list = new PositionList();
-            for( Move move : this )
-            {
-                list.add(move.to);
-            }
-            return list;
-        }
-        public PositionList from()
-        {
-            PositionList list = new PositionList();
-            for( Move move : this )
-            {
-                list.add(move.from);
-            }
-            return list;
-        }
-    }
+    
     
     public final Position from;
     public final Position to;
@@ -34,7 +14,7 @@ public class Move
         this.from = from;
         this.to = to;
     }
-
+    
     @Override
     public String toString()
     {
@@ -80,7 +60,6 @@ public class Move
     {
         return (to.row == 0) || (to.row == Config.ROWS - 1 );
     }
-    
     
 
 }
