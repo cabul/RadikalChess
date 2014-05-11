@@ -8,18 +8,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import radikalchess.Player.Decision;
 
 public class Main {
     
-    private static BufferedWriter cout;
-    private static BufferedWriter cerr;
-    private static BufferedReader cin;
-    
-    private static HashMap<String,Command> commands;
-    
-    private static enum Return { VOID, PRINT, EXIT, ERROR };
+    private static enum Return { VOID, CHANGE, EXIT, ERROR };
     
     private static interface Command
     {
@@ -28,73 +24,138 @@ public class Main {
     
     private static Command DEFAULT;
     
-    private static void println(Object msg) throws IOException
+    private void println(Object msg) throws IOException
     {
         // mapped to cout
-        cout.write(msg.toString()); cout.newLine();
+        cout.write(msg.toString()); cout.newLine(); cout.flush();
     }
     
-    private static Return errorln(Object msg) throws IOException
+    private Return errorln(Object msg) throws IOException
     {
         // mapped to cerr
-        cerr.write(msg.toString()); cerr.newLine();
+        cerr.write(msg.toString()); cerr.newLine(); cerr.flush();
         return Return.ERROR;
     }
     
-    private static void repl() throws IOException
+    private final BufferedWriter cout;
+    private final BufferedWriter cerr;
+    private final BufferedReader cin;
+    private final PrettyPrinter printer;
+    private final List<Move> moveBuffer;
+    private final List<Position> positionBuffer;
+    private final EnumMap<Color,Player> players;
+    private final HashMap<String,Command> commands;
+    private AISearch ai;
+    private Game game;
+    
+    private void repl() throws IOException
     {
-        Command c = commands.get("new");
-        String[] args = null;
-        Return rv;
-        while( (rv = c.execute(args)) != Return.EXIT )
+        Command c;
+        String[] args;
+        Return rv = Return.VOID;
+        println("Welcome to Radikal Chess");
+        while( rv != Return.EXIT )
         {
-            if( rv == Return.PRINT) 
-                commands.get("print").execute(null);
-            cout.flush();
-            cerr.flush();
-            args = cin.readLine().split(" ");
-            c = commands.get( args[0].toLowerCase() );
+            if( rv == Return.CHANGE ) 
+            {
+                print();
+                Player.Decision decision = players.get( game.player() ).decision;
+                if( decision != null ) {
+                    Move move = decision.make( game.board() );
+                    
+                    if( move != null )
+                    {
+                        game.advance(move);
+                        if( Config.DEBUG )
+                        {
+                            println("Move: " + move);
+                            println("Continue?");
+                            if( cin.readLine().equals("debug") )
+                            {
+                                rv = Return.VOID;
+                                print();
+                            }
+                        }
+                        continue;
+                    }
+                    else 
+                    {
+                        println(game.player() + " cannot move");
+                    }
+                }
+            }
+            args = cin.readLine().toLowerCase().split(" ");
+            c = commands.get( args[0] );
             if( c == null ) c = DEFAULT;
+            rv = c.execute( args );
         }
     }
     
     public static void main(String[] args) throws IOException {
         
+        new Main().repl();
+    }
+    
+    private void print() throws IOException
+    {
+        println("Turn " + game.turn());
+        printer.clear().load(game.board()).print(cout);
+        println(game.player()+" to move");
+    }
+    
+    private Main()
+    {
         cin = new BufferedReader(new InputStreamReader(System.in));
         cout = new BufferedWriter(new OutputStreamWriter(System.out));
         cerr = new BufferedWriter(new OutputStreamWriter(System.err));
-        
         commands = new HashMap();
-        
-        final Game game = new Game();
-        final PrettyPrinter printer = new PrettyPrinter();
-        final List<Move> moveBuffer = new ArrayList();
-        final List<Position> positionBuffer = new ArrayList();
+        game = new Game();
+        printer = new PrettyPrinter();
+        moveBuffer = new ArrayList();
+        positionBuffer = new ArrayList();
+        players = new EnumMap( Color.class );
         
         final Heuristic hValue = new Heuristic(){
 
             @Override
             public int eval(Board board) {
-                return board.info(board.player()).value();
+                return board.info(board.player()).value() 
+                     - board.info(board.player().enemy()).value();
             }
             
         };
+        ai = new AISearch(hValue);
+        try {
+            ai.debug(new BufferedWriter(new FileWriter("search.log")));
+        } catch (IOException ex) {
+            
+        }
+        Player.human.decision = null;
         
-        final AISearch ai = new AISearch(hValue);
+        Player.ai.decision = new Decision(){
+
+            @Override
+            public Move make(Board board) {
+                return ai.negamax(board);
+            }
+            
+        };
         
         DEFAULT = new Command(){
             @Override
             public Return execute(String[] args) throws IOException {
                 Move move = Move.fromString(args[0]);
                 if( move != null ){
-                    if( game.board().valid(move) ){
+                    moveBuffer.clear();
+                    Generator.genAllMoves(moveBuffer, game.board(), game.player());
+                    if( moveBuffer.contains(move) ){
                         game.advance(move);
                     } else {
                         return errorln("No valid Move: '"+move+"'");
                     }
                 }
                 else return errorln("I don't understand '" + args[0]+"'");
-                return Return.PRINT;
+                return Return.CHANGE;
             }
         };
         
@@ -112,8 +173,26 @@ public class Main {
             @Override
             public Return execute(String[] args) throws IOException {
                 println("Starting new Game");
-                game.reset();
-                return Return.PRINT;
+                players.clear();
+                for( Color color : Color.values() )
+                {
+                    while( true )
+                    {
+                        cout.write(color + ": ");
+                        cout.flush();
+                        String input = cin.readLine();
+                        Player p = Player.fromString(input);
+                        if( p == null )
+                        {
+                            errorln("'"+input+"' is no valid player");
+                        } else {
+                            players.put(color, p);
+                            break;
+                        }
+                    }
+                }
+                game = new Game();
+                return Return.CHANGE;
             } 
         });
         
@@ -129,9 +208,7 @@ public class Main {
         commands.put("print", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                println("Turn " + game.turn());
-                printer.clear().load(game.board()).print(cout);
-                println(game.player()+" to move");
+                print();
                 return Return.VOID;
             }
         });
@@ -153,7 +230,7 @@ public class Main {
             @Override
             public Return execute(String[] args) throws IOException {
                 if( !game.undo() ) return errorln("No moves to undo");
-                return Return.PRINT;
+                return Return.CHANGE;
             }
         });
         
@@ -161,7 +238,7 @@ public class Main {
             @Override
             public Return execute(String[] args) throws IOException {
                 if( !game.redo() ) return errorln("No moves to redo");
-                return Return.PRINT;
+                return Return.CHANGE;
             }
         });
         
@@ -195,7 +272,7 @@ public class Main {
                     }
                     println("Loading complete");
                 }
-                return Return.PRINT;
+                return Return.CHANGE;
             }
         });
         
@@ -283,16 +360,16 @@ public class Main {
             }
         });
         
-        commands.put("decide", new Command() {
+        commands.put("hint", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                Move move = ai.decide(game.board());
+                Move move = ai.negamax(game.board());
+                System.out.println("Try " + move);
                 return Return.VOID;
             }
         });
-       
-        repl();
         
     }
+    
 
 }

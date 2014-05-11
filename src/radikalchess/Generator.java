@@ -245,7 +245,7 @@ public class Generator {
     
     private static void pawnMoves(List<Move> list, Board board, Color player, Position piece)
     {
-        Direction dir = ( player == Color.white)
+        Direction dir = ( player == Color.white )
                                   ? Direction.UP
                                   : Direction.DOWN;
         

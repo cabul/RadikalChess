@@ -14,14 +14,12 @@ public class Board implements Iterable<Position>
     
     private EnumMap<Color,Info> details;
     
-    private List<Move> moves;
+    private int moves;
     
     private int turn;
     
     private Stack<Move> history;
     private Stack<Piece> captures;
-    
-    private boolean dirty;
     
     public static Board init()
     {
@@ -49,16 +47,16 @@ public class Board implements Iterable<Position>
         
         b.turn = 1;
         
+        b.moves = -1;
+        
         return b;
     }
     
     public Board() {
         map = new EnumMap( Position.class );
         details = new EnumMap( Color.class );
-        moves = new ArrayList();
         history = new Stack();
         captures = new Stack();
-        dirty = true;
     }
     
     @Override
@@ -92,21 +90,19 @@ public class Board implements Iterable<Position>
         return turn;
     }
 
-    public List<Move> moves()
+    public List<Move> genMoves()
     {
-        if( dirty )
-        {
-            moves.clear();
-            Generator.genAllMoves(moves, this, player());
-            dirty = false;
-        }
-        return moves;
+        List<Move> list = new ArrayList();
+        Generator.genAllMoves(list, this, player());
+        moves = list.size();
+        return list;
     }
     
-    public boolean valid(Move move)
+    public int numMoves()
     {
-        moves();
-        return moves.contains(move);
+        if( moves < 0 )
+            genMoves();
+        return moves;
     }
     
     public Piece at(Position pos)
@@ -137,7 +133,7 @@ public class Board implements Iterable<Position>
         history.push(move);
         captures.push(cap);
         
-        dirty = true;
+        moves = -1;
         
         return true;
     }
@@ -159,7 +155,7 @@ public class Board implements Iterable<Position>
         
             turn--;
         
-            dirty = true;
+            moves = -1;
             
             return true;
         } catch( EmptyStackException ex ){ return false; }
@@ -216,6 +212,7 @@ public class Board implements Iterable<Position>
             String[] words = lines[i].split(" ");
             add( Piece.fromString(lines[i]), Position.fromString(words[2]));
         }
+        moves = -1;
     }
     
     public static class Info

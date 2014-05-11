@@ -2,7 +2,7 @@ package radikalchess;
 
 import java.util.ArrayList;
 
-public interface Heuristic {
+public abstract class Heuristic {
 
     public static class HeuristicList extends ArrayList<Heuristic>
     {
@@ -15,6 +15,6 @@ public interface Heuristic {
         }
     };
     
-    public int eval(Board board);
+    public abstract int eval(Board board);
     
 }

@@ -53,6 +53,7 @@ public final class PrettyPrinter {
         {
             bw.write(str); bw.newLine();
         }
+        bw.flush();
     }
     
     private int offset(Position pos)
@@ -91,7 +92,7 @@ public final class PrettyPrinter {
         for( Move move : mask )
         {
             put( MARK, move.to );
-            put( new StringBuilder(get(move.from)).reverse().toString(), move.from );
+            put( get(move.from).toLowerCase() , move.from );
         }
         return this;
     }
