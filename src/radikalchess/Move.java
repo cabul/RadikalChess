@@ -55,7 +55,11 @@ public class Move
             return null;
         }
     }
- 
     
+    public boolean isPromotion()
+    {
+        return (to.row == 0) || (to.row == Config.ROWS - 1 );
+    }
     
+
 }

@@ -13,7 +13,7 @@ public final class Game {
     private Board board;
 
     private EnumMap<Position,Piece> initMap;
-    private int initTurn;
+    private Color initColor;
     
     private Stack<Move> undos;
     
@@ -39,7 +39,7 @@ public final class Game {
         initMap.put( Position.b6, Piece.black_queen );
         initMap.put( Position.a6, Piece.black_king );
         
-        initTurn = 1;
+        initColor = Color.white;
         
         reset();
     }
@@ -92,7 +92,7 @@ public final class Game {
             bw.write(move.toString());
             bw.newLine();
         }
-        bw.write( "turn " + turn() ); bw.newLine();
+        bw.write( "turn " + initColor ); bw.newLine();
         bw.write("end"); bw.newLine();
         bw.flush();
     }
@@ -106,7 +106,7 @@ public final class Game {
         int ln = 0;
         initMap = new EnumMap(Position.class);
         List<Move> history = new ArrayList();
-        int turn = 1;
+        Color turn = Color.white;
         while( !"end".equals(line = br.readLine() ) )
         {
             ln++;
@@ -121,12 +121,8 @@ public final class Game {
                     break;
                 case 2:
                     if( !"turn".equals(words[0]) ) throw new IOException( "["+ln+"] "+line);
-                    try{
-                        turn = Integer.parseInt(words[1]);
-                    } catch(NumberFormatException ex) {
-                        throw new IOException( "["+ln+"] "+line);
-                    }
-                    if( turn < 0 )throw new IOException( "["+ln+"] "+line);
+                    turn = Color.fromString(words[1]);
+                    if( turn == null )throw new IOException( "["+ln+"] "+line);
                     break;
                 case 3:
                     Position pos = Position.fromString(words[2]);
@@ -140,7 +136,7 @@ public final class Game {
             
         }
         
-        initTurn = turn;
+        initColor = turn;
         reset();
         for( Move move : history )
         {
@@ -151,7 +147,7 @@ public final class Game {
     
     public void reset()
     {
-        board = Board.load(initMap, initTurn);
+        board = Board.load(initMap, initColor);
         undos.clear();
     }
     

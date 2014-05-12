@@ -1,5 +1,9 @@
 package radikalchess;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.EnumMap;
@@ -7,6 +11,8 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Board implements Iterable<Position>
 {
@@ -18,8 +24,11 @@ public class Board implements Iterable<Position>
     
     private int turn;
     
+    private int white_turn;
+    
     private Stack<Move> history;
     private Stack<Piece> captures;
+    private Stack<Integer> promotions;
     
     public static Board init()
     {
@@ -45,7 +54,7 @@ public class Board implements Iterable<Position>
         b.add( Piece.black_bishop, Position.c6 );
         b.add( Piece.black_rook, Position.d6 );
         
-        b.turn = 1;
+        b.white_turn = 1;
         
         b.moves = -1;
         
@@ -57,16 +66,8 @@ public class Board implements Iterable<Position>
         details = new EnumMap( Color.class );
         history = new Stack();
         captures = new Stack();
-    }
-    
-    @Override
-    public Board clone()
-    {
-        Board b = new Board();
-        b.map = map.clone();
-        b.details = details.clone();
-        b.turn = turn;
-        return b;
+        promotions = new Stack();
+        turn = 1;
     }
     
     private void clear()
@@ -79,11 +80,12 @@ public class Board implements Iterable<Position>
         details.put(Color.black,new Info());
         history.clear();
         captures.clear();
+        promotions.clear();
     }
     
     public Color player()
     {
-        return ( turn % 2 == 1 )?Color.white:Color.black;
+        return ( turn % 2 == white_turn )?Color.white:Color.black;
     }
     
     public int turn()
@@ -94,8 +96,10 @@ public class Board implements Iterable<Position>
     public List<Move> genMoves()
     {
         List<Move> list = new ArrayList();
+        
         Generator.genAllMoves(list, this, player());
         moves = list.size();
+        
         return list;
     }
     
@@ -120,8 +124,11 @@ public class Board implements Iterable<Position>
         if( cap != null )
             delete( cap, move.to );
         delete( mov, move.from );
-        if( mov.type == Piece.Type.pawn && move.from.atEndRow(mov.color))
+        if( mov.type == Piece.Type.pawn && move.to.atEndRow(mov.color))
+        {
             add( mov.toQueen(), move.to );
+            promotions.push(turn);
+        }
         else add( mov, move.to );
         
         turn++;
@@ -138,19 +145,21 @@ public class Board implements Iterable<Position>
     {
         if( history.empty() ) return null;
         if( captures.empty() ) return null;
+        turn--;
         Move move = history.pop();
         Piece cap = captures.pop();
         
         Piece mov = at(move.to);
         if( mov == null ) return null;
         delete( mov, move.to );
-        if( move.isPromotion() && mov.type == Piece.Type.queen )
+        if( !promotions.empty()) {
+        if( promotions.peek() == turn ){
             add( mov.toPawn(), move.from );
+            promotions.pop();
+        }}
         else add( mov, move.from );
         if( cap != null )
             add( cap, move.to );
-        
-        turn--;
         
         moves = -1;
             
@@ -186,7 +195,7 @@ public class Board implements Iterable<Position>
         return map.keySet().iterator();
     }
 
-    public static Board load(EnumMap<Position,Piece> map, int turn)
+    public static Board load(EnumMap<Position,Piece> map, Color starter)
     {
         Board b = new Board();
         b.clear();
@@ -194,7 +203,7 @@ public class Board implements Iterable<Position>
         {
             b.add(map.get(pos), pos);
         }
-        b.turn = turn;
+        b.white_turn = starter.enemy().ordinal();
         return b;
     }
     

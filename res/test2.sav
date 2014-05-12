@@ -1,0 +1,7 @@
+begin
+white king d1
+white pawn d5
+black king a6
+black bishop c6
+turn white
+end

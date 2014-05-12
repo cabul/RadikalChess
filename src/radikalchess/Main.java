@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import radikalchess.Player.Decision;
 
 public class Main {
@@ -47,6 +49,7 @@ public class Main {
     private final HashMap<String,Command> commands;
     private AISearch ai;
     private Game game;
+    private BufferedWriter log;
     
     private void repl() throws IOException
     {
@@ -66,18 +69,14 @@ public class Main {
                     if( move != null )
                     {
                         game.advance(move);
-                        if( Config.DEBUG )
+                        
+                        println("Move: " + move);
+                        cout.write("Continue? ");cout.flush();
+                        if( cin.readLine().equals("") )
                         {
-                            println("Move: " + move);
-                            println("Continue?");
-                            if( cin.readLine().equals("debug") )
-                            {
-                                players.put(game.player().enemy(), Player.human);
-                                rv = Return.VOID;
-                                print();
-                            }
+                            continue;
                         }
-                        continue;
+                        
                     }
                     else 
                     {
@@ -109,6 +108,7 @@ public class Main {
         cin = new BufferedReader(new InputStreamReader(System.in));
         cout = new BufferedWriter(new OutputStreamWriter(System.out));
         cerr = new BufferedWriter(new OutputStreamWriter(System.err));
+        log = new BufferedWriter(new OutputStreamWriter(System.out));
         commands = new HashMap();
         game = new Game();
         printer = new PrettyPrinter();
@@ -129,11 +129,7 @@ public class Main {
             
         };
         ai = new AISearch(hValue);
-        try {
-            ai.debug(new BufferedWriter(new FileWriter("search.log")));
-        } catch (IOException ex) {
-            
-        }
+        
         Player.human.decision = null;
         
         Player.ai.decision = new Decision(){
@@ -376,6 +372,13 @@ public class Main {
             public Return execute(String[] args) throws IOException {
                 Move move = ai.negamax(game.board());
                 System.out.println("Try " + move);
+                try {
+                    println("Log trace?");
+                    if( "".equals( cin.readLine()) ) {
+                        log.write( ai.metrics().trace );
+                        log.flush();
+                    }
+                } catch (IOException ex) {}
                 return Return.VOID;
             }
         });
@@ -385,6 +388,33 @@ public class Main {
             public Return execute(String[] args) throws IOException {
                 players.put(game.player(),Player.ai);
                 return Return.CHANGE;
+            }
+        });
+        
+        commands.put("heur", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                int val = hValue.eval( game.board() );
+                if( args.length == 2 ) {
+                    Color color = Color.fromString(args[1]);
+                    if( color == game.player().enemy() )
+                    {
+                        val *= -1;
+                    }
+                }
+                println(val);
+                return Return.VOID;
+            }
+        });
+        
+        commands.put("log", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                if( args.length < 2 ) log = cout;
+                else {
+                    log = new BufferedWriter(new FileWriter(args[1]));
+                }
+                return Return.VOID;
             }
         });
         

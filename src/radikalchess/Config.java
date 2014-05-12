@@ -11,7 +11,7 @@ import java.util.Date;
 
 public class Config {
     
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     
     public static final int ROWS = 6;
     public static final int COLUMNS = 4;

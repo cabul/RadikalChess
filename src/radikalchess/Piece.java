@@ -63,7 +63,7 @@ public enum Piece
             case queen:
                 return 500;
             case king:
-                return 20000;
+                return 999999;
             default:
                 return 0;
         }

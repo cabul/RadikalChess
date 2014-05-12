@@ -2,6 +2,7 @@ package radikalchess;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,8 +14,7 @@ public class AISearch{
     private static int POSITIVE_INFINITY = 9999999;
     
     private final HeuristicList heuristics;
-    private BufferedWriter debug;
-    private int maxDepth = Config.SEARCH_DEPTH;
+    private int maxDepth = 5;
     private int timeout = Config.SEARCH_TIMEOUT * 1000;
     private Metrics metrics;
     
@@ -31,12 +31,6 @@ public class AISearch{
         this.heuristics.addAll(Arrays.asList(heuristics));
     }
     
-    public AISearch debug(BufferedWriter debug)
-    {
-        this.debug = debug;
-        return this;
-    }
-    
     public AISearch depth(int depth)
     {
         maxDepth = depth;
@@ -51,12 +45,12 @@ public class AISearch{
     
     public static final class Metrics
     {
-        public final int expanded;
-        public final int depth;
-        private Metrics(int expanded, int depth)
+        public int expanded;
+        public int depth;
+        public String trace;
+        private Metrics()
         {
-            this.expanded = expanded;
-            this.depth = depth;
+            trace = "Starting new Search\n";
         }
     }
     
@@ -66,50 +60,52 @@ public class AISearch{
     
     public Move negamax(Board root)
     {
+        
+        metrics = new Metrics();
         int expandedNodes = 0;
         int depth = 0;
         long maxTime = System.currentTimeMillis() + timeout;
         
         List<Move> moves = root.genMoves();
+        if (moves == null) return null;
         Move bestMove = null;
         int best = NEGATIVE_INFINITY;
-        
-        dbg("Starting new Search");
-        dbg(root);
         
         for( Move move : moves )
         {
             root.make(move);
-            int val = negamax( root, 1, NEGATIVE_INFINITY, POSITIVE_INFINITY, 1);
+            int val = -negamax( root, maxDepth-1, NEGATIVE_INFINITY, POSITIVE_INFINITY);
+            metrics.trace += "[0] " + move + " => "+val + "\n";
             if( val > best ){
                 bestMove = move;
+                best = val;
             }
             root.unmake();
         }
         
-        metrics = new Metrics(expandedNodes,depth);
         return bestMove;
     }
     
-    private int negamax(Board board, int depth, int alpha, int beta, int color)
+    // Return best value for board and its current player
+    private int negamax(Board board, int depth, int alpha, int beta)
     {
+        
         List<Move> moves = board.genMoves();
         
-        dbg("Depth " + depth);
-        dbg(board);
-        
-        if( moves.isEmpty() || depth == 0 ) {
-            
-            return color * heuristics.eval( board );
-            
+        if( depth == 0 || moves.isEmpty ()) { // Depth limit reached or no more moves
+            return heuristics.eval(board);
         }
         
         int best = NEGATIVE_INFINITY;
         
+        String off = "";
+        for( int i = -1; i < maxDepth - depth; i++ ) off += "  ";
+        
         for( Move move : moves )
         {
             board.make(move);
-            int val = -negamax( board, depth - 1, -beta, -alpha, -color );
+            int val = -negamax( board, depth - 1, -beta, -alpha);
+            metrics.trace += "["+(maxDepth - depth) + "] " + off + move + " => " + val +"\n";
             best = Math.max( val, best );
             alpha = Math.max( alpha, val );
             board.unmake();
@@ -117,38 +113,8 @@ public class AISearch{
                 break;
             }
         }
-        
         return best;
+        
     }
-    
-    
-    private void dbg(String msg)
-    {
-        if( debug != null && Config.DEBUG )
-        {
-            try{
-                debug.write(msg);
-                debug.newLine();
-                debug.flush();
-            }catch(IOException ex)
-            {
-                
-            }
-        }
-    }
-    
-    private void dbg(Board board)
-    {
-        if( debug != null )
-        {
-            try{
-                printer.load(board).print(debug);
-            }catch(IOException ex)
-            {
-                
-            }
-        }
-    }
-    
     
 }

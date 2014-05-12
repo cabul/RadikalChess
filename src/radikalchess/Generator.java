@@ -2,10 +2,13 @@ package radikalchess;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Generator {
 
@@ -163,6 +166,7 @@ public class Generator {
     public static void genAllMoves(List<Move> list, Board board, Color player)
     {
         if( board.info(player).king() == null ) return;
+        if( board.info(player.enemy()).king() == null ) return;
         for( Position piece : board.info(player).pieces() )
         {
             genMoves(list,board,player,piece);
@@ -245,6 +249,7 @@ public class Generator {
     
     private static void pawnMoves(List<Move> list, Board board, Color player, Position piece)
     {
+        
         Direction dir = ( player == Color.white )
                                   ? Direction.UP
                                   : Direction.DOWN;
@@ -263,6 +268,8 @@ public class Generator {
         if( board.at(pos) != null)
         if( board.at(pos).color != player )
             list.add(new Move(piece,pos));
+        
+        
         
     }
     
