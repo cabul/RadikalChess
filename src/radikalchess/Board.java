@@ -72,6 +72,7 @@ public class Board implements Iterable<Position>
     private void clear()
     {
         turn = 1;
+        moves = -1;
         map.clear();
         details.clear();
         details.put(Color.white,new Info());
@@ -110,11 +111,6 @@ public class Board implements Iterable<Position>
         return map.get(pos);
     }
     
-    public void commit()
-    {
-        history.clear();
-        captures.clear();
-    }
     
     public boolean make(Move move)
     {
@@ -124,7 +120,7 @@ public class Board implements Iterable<Position>
         if( cap != null )
             delete( cap, move.to );
         delete( mov, move.from );
-        if( move.isPromotion() && mov.type == Piece.Type.pawn ) 
+        if( mov.type == Piece.Type.pawn && move.from.atEndRow(mov.color))
             add( mov.toQueen(), move.to );
         else add( mov, move.to );
         
@@ -138,27 +134,28 @@ public class Board implements Iterable<Position>
         return true;
     }
     
-    public boolean unmake()
+    public Move unmake()
     {
-        try {
-            Move move = history.pop();
-            Piece cap = captures.pop();
+        if( history.empty() ) return null;
+        if( captures.empty() ) return null;
+        Move move = history.pop();
+        Piece cap = captures.pop();
         
-            Piece mov = at(move.to);
-            if( mov == null ) return false;
-            delete( mov, move.to );
-            if( move.isPromotion() && mov.type == Piece.Type.queen )
-                add( mov.toPawn(), move.from );
-            else add( mov, move.from );
-            if( cap != null )
-                add( cap, move.to );
+        Piece mov = at(move.to);
+        if( mov == null ) return null;
+        delete( mov, move.to );
+        if( move.isPromotion() && mov.type == Piece.Type.queen )
+            add( mov.toPawn(), move.from );
+        else add( mov, move.from );
+        if( cap != null )
+            add( cap, move.to );
         
-            turn--;
+        turn--;
         
-            moves = -1;
+        moves = -1;
             
-            return true;
-        } catch( EmptyStackException ex ){ return false; }
+        return move;
+        
     }
             
     public Info info(Color color)
@@ -189,30 +186,16 @@ public class Board implements Iterable<Position>
         return map.keySet().iterator();
     }
 
-    public String save()
+    public static Board load(EnumMap<Position,Piece> map, int turn)
     {
-        String str = "";
-        for( Position pos : Position.values() )
+        Board b = new Board();
+        b.clear();
+        for( Position pos : map.keySet() )
         {
-            if( at(pos) != null )
-            {
-                str += at(pos)
-                +" "+ pos +"\n";
-            }
+            b.add(map.get(pos), pos);
         }
-        return str.substring(0, str.length()-1);
-    }
-    
-    public void load(String str)
-    {
-        clear();
-        String[] lines = str.split("\n");
-        for( int i = 0; i < lines.length; i++ )
-        {
-            String[] words = lines[i].split(" ");
-            add( Piece.fromString(lines[i]), Position.fromString(words[2]));
-        }
-        moves = -1;
+        b.turn = turn;
+        return b;
     }
     
     public static class Info

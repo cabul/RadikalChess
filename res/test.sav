@@ -1,0 +1,20 @@
+begin
+white rook a1
+white bishop b1
+white queen c1
+white king d1
+white pawn a2
+white pawn b2
+white pawn c2
+white pawn d2
+black pawn a5
+black pawn b5
+black pawn c5
+black pawn d5
+black king a6
+black queen b6
+black bishop c6
+black rook d6
+a2a3
+turn 1
+end

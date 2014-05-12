@@ -72,6 +72,7 @@ public class Main {
                             println("Continue?");
                             if( cin.readLine().equals("debug") )
                             {
+                                players.put(game.player().enemy(), Player.human);
                                 rv = Return.VOID;
                                 print();
                             }
@@ -114,6 +115,9 @@ public class Main {
         moveBuffer = new ArrayList();
         positionBuffer = new ArrayList();
         players = new EnumMap( Color.class );
+        
+        players.put(Color.white, Player.human);
+        players.put(Color.black, Player.human);
         
         final Heuristic hValue = new Heuristic(){
 
@@ -191,7 +195,7 @@ public class Main {
                         }
                     }
                 }
-                game = new Game();
+                game.reset();
                 return Return.CHANGE;
             } 
         });
@@ -245,13 +249,14 @@ public class Main {
         commands.put("save", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                if(args.length == 1) game.save(cout);
+                if(args.length == 1)
+                    game.save(cout);
                 else{
                     try (BufferedWriter file = new BufferedWriter(new FileWriter(args[1]))) {
                         game.save(file);
                     } catch(Exception ex)
                     {
-                        return errorln("Saving error");
+                        return errorln("Loading error: " +ex.getLocalizedMessage());
                     }
                     println("Saving complete");
                 }
@@ -262,13 +267,19 @@ public class Main {
         commands.put("load", new Command() {
             @Override
             public Return execute(String[] args) throws IOException {
-                if(args.length == 1) game.load(cin);
+                if(args.length == 1) 
+                try {
+                    game.load(cin);
+                } catch(IOException ex)
+                {
+                    return errorln("Loading Error: " +ex.getLocalizedMessage());
+                }
                 else{
                     try (BufferedReader file = new BufferedReader(new FileReader(args[1]))) {
                         game.load(file);
                     } catch(Exception ex)
                     {
-                        return errorln("Loading error");
+                        return errorln("Loading error: " +ex.getLocalizedMessage());
                     }
                     println("Loading complete");
                 }
@@ -366,6 +377,14 @@ public class Main {
                 Move move = ai.negamax(game.board());
                 System.out.println("Try " + move);
                 return Return.VOID;
+            }
+        });
+     
+        commands.put("play", new Command() {
+            @Override
+            public Return execute(String[] args) throws IOException {
+                players.put(game.player(),Player.ai);
+                return Return.CHANGE;
             }
         });
         

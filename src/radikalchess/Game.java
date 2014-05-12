@@ -4,24 +4,49 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Stack;
 
 public final class Game {
     
-    private ArrayList<Move> history;
-    private Board init;
-    private Board current;
-    private int head;
+    private Board board;
 
+    private EnumMap<Position,Piece> initMap;
+    private int initTurn;
+    
+    private Stack<Move> undos;
+    
     public Game()
     {
-        init = Board.init();
-        history = new ArrayList();
+        undos = new Stack();
+        
+        initMap = new EnumMap(Position.class);
+        initMap.put( Position.a2, Piece.white_pawn );
+        initMap.put( Position.b2, Piece.white_pawn );
+        initMap.put( Position.c2, Piece.white_pawn );
+        initMap.put( Position.d2, Piece.white_pawn );
+        initMap.put( Position.a1, Piece.white_rook );
+        initMap.put( Position.b1, Piece.white_bishop );
+        initMap.put( Position.c1, Piece.white_queen );
+        initMap.put( Position.d1, Piece.white_king );
+        initMap.put( Position.a5, Piece.black_pawn );
+        initMap.put( Position.b5, Piece.black_pawn );
+        initMap.put( Position.c5, Piece.black_pawn );
+        initMap.put( Position.d5, Piece.black_pawn );
+        initMap.put( Position.d6, Piece.black_rook );
+        initMap.put( Position.c6, Piece.black_bishop );
+        initMap.put( Position.b6, Piece.black_queen );
+        initMap.put( Position.a6, Piece.black_king );
+        
+        initTurn = 1;
+        
         reset();
     }
     
     public Board board()
     {
-        return current;
+        return board;
     }
     
     public Color player()
@@ -36,73 +61,98 @@ public final class Game {
     
     public void advance(Move move)
     {
-        while( head < history.size() )
-            history.remove(history.get(head));
-        history.add(move);
-        head++;
-        move_head();
+        board.make(move);
     }
     
     public boolean undo()
     {
-        if( head <= 0 ) return false;
-        head--;
-        move_head();
+        Move move = board.unmake();
+        if( move == null ) return false;
+        undos.push(move);
         return true;
     }
     
     public boolean redo()
     {
-        if( head > history.size() - 1) return false;
-        head++;
-        move_head();
+        if( undos.empty() ) return false;
+        board.make( undos.pop() );
         return true;
-    }
-    
-    private void move_head()
-    {
-        current = init.clone();
-        for( int i = 0; i < head; i++ )
-        {
-            current.make(history.get(i));
-        }
-        current.commit();
     }
     
     public void save(BufferedWriter bw) throws IOException
     {
-        bw.write(init.save());
-        bw.newLine();
-        bw.write("/");
-        bw.newLine();
-        for(Move move : history) {
+        bw.write("begin");bw.newLine();
+        for( Position pos : initMap.keySet() )
+        {
+            bw.write(initMap.get(pos) + " " + pos); bw.newLine();
+        }
+        Move move;
+        while( (move = board.unmake()) != null )
+        {
             bw.write(move.toString());
             bw.newLine();
         }
-        bw.write("/");
-        bw.newLine();
+        bw.write( "turn " + turn() ); bw.newLine();
+        bw.write("end"); bw.newLine();
+        bw.flush();
     }
     
+    @SuppressWarnings("empty-statement")
     public void load(BufferedReader br) throws IOException
     {
-        reset();
-        String board = "";
+        while(!"begin".equals(br.readLine()));
+        
         String line;
-        while(!"/".equals(line = br.readLine()))
-            board+=line+"\n";
-        init.load(board);
-        while(!"/".equals(line = br.readLine()))
+        int ln = 0;
+        initMap = new EnumMap(Position.class);
+        List<Move> history = new ArrayList();
+        int turn = 1;
+        while( !"end".equals(line = br.readLine() ) )
         {
-            history.add(Move.fromString(line));
+            ln++;
+            if( line.equals("") ) continue;
+            String[] words = line.split(" ");
+            
+            switch( words.length ) {
+                case 1:
+                    Move move = Move.fromString(line);
+                    if( move == null) throw new IOException( "["+ln+"] "+line);
+                    history.add(move);
+                    break;
+                case 2:
+                    if( !"turn".equals(words[0]) ) throw new IOException( "["+ln+"] "+line);
+                    try{
+                        turn = Integer.parseInt(words[1]);
+                    } catch(NumberFormatException ex) {
+                        throw new IOException( "["+ln+"] "+line);
+                    }
+                    if( turn < 0 )throw new IOException( "["+ln+"] "+line);
+                    break;
+                case 3:
+                    Position pos = Position.fromString(words[2]);
+                    Piece piece = Piece.fromString(line);
+                    if( pos == null || piece == null ) throw new IOException( "["+ln+"] "+line);
+                    initMap.put(pos, piece);
+                    break;
+                default:
+                    throw new IOException( "["+ln+"] "+line);
+            }
+            
         }
-        head = history.size();
-        move_head();
+        
+        initTurn = turn;
+        reset();
+        for( Move move : history )
+        {
+            if( !board.make(move)) throw new IOException("Illegal move "+move);
+        }
+        
     }
-
-    public void reset() {
-        head = 0;
-        history.clear();
-        current = init.clone();
+    
+    public void reset()
+    {
+        board = Board.load(initMap, initTurn);
+        undos.clear();
     }
     
 }

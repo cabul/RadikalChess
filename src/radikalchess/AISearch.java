@@ -80,14 +80,12 @@ public class AISearch{
         for( Move move : moves )
         {
             root.make(move);
-            int val = negamax( root, 3, NEGATIVE_INFINITY, POSITIVE_INFINITY, 1);
+            int val = negamax( root, 1, NEGATIVE_INFINITY, POSITIVE_INFINITY, 1);
             if( val > best ){
                 bestMove = move;
             }
             root.unmake();
         }
-        
-        root.commit();
         
         metrics = new Metrics(expandedNodes,depth);
         return bestMove;

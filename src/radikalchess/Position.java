@@ -60,4 +60,9 @@ public enum Position {
         return ((b.row - a.row) * (b.row - a.row)) + ((b.col - a.col) * (b.col - a.col));
     }
     
+    public boolean atEndRow(Color color)
+    {
+        return (color == Color.white)?(row==Config.ROWS-1):(row==0);
+    }
+    
 }
